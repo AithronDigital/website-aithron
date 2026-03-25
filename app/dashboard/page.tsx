@@ -21,9 +21,13 @@ export default function Dashboard() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
         router.replace('/')
-      } else {
-        setVerificat(true)
+        return
       }
+      if (session.user.email === 'mirela25lili@gmail.com') {
+        router.replace('/admin')
+        return
+      }
+      setVerificat(true)
     }
     verificaSesiunea()
   }, [])
