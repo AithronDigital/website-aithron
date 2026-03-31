@@ -510,32 +510,34 @@ export default function SectiuneProprietati() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               {proprietatiFiltrate.map(p => (
-                <div key={p.id} style={{ background: 'white', borderRadius: '12px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                  <div style={{ display: 'flex', gap: '15px', alignItems: 'flex-start', marginBottom: '12px' }}>
-                    {p.poza ? (
-                      <img src={p.poza} alt={p.titlu} style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '8px', flexShrink: 0 }} />
-                    ) : (
-                      <div style={{ width: '80px', height: '60px', background: '#f0f0f0', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', flexShrink: 0 }}>🏡</div>
-                    )}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: '15px', marginBottom: '4px', wordBreak: 'break-word' }} dangerouslySetInnerHTML={{ __html: p.titlu }} />
-                      <div style={{ color: '#666', fontSize: '13px', marginBottom: '6px' }}>
-                        {p.locatie && `📍 ${p.locatie}`}
-                        {p.pret && ` · 💰 ${p.pret} €`}
-                        {p.suprafata && ` · 📐 ${p.suprafata} mp`}
-                      </div>
-                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                        <span style={{ background: p.status === 'publish' ? '#dcfce7' : '#fef9c3', color: p.status === 'publish' ? '#166534' : '#854d0e', padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
-                          {p.status === 'publish' ? '✅ Publicat' : '📝 Ciornă'}
-                        </span>
-                        <span style={{ background: '#f0f0f0', padding: '3px 10px', borderRadius: '20px', fontSize: '12px' }}>{p.tip_tranzactie}</span>
+                <div key={p.id} style={{ background: 'white', borderRadius: '12px', padding: '20px 25px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '15px', flexWrap: esteDesktop ? 'nowrap' as const : 'wrap' as const }}>
+                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center', flex: 1, minWidth: 0 }}>
+                      {p.poza ? (
+                        <img src={p.poza} alt={p.titlu} style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '8px', flexShrink: 0 }} />
+                      ) : (
+                        <div style={{ width: '80px', height: '60px', background: '#f0f0f0', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', flexShrink: 0 }}>🏡</div>
+                      )}
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '4px', wordBreak: 'break-word' }} dangerouslySetInnerHTML={{ __html: p.titlu }} />
+                        <div style={{ color: '#666', fontSize: '13px' }}>
+                          {p.locatie && `📍 ${p.locatie}`}
+                          {p.pret && ` · 💰 ${p.pret} €`}
+                          {p.suprafata && ` · 📐 ${p.suprafata} mp`}
+                        </div>
+                        <div style={{ marginTop: '6px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          <span style={{ background: p.status === 'publish' ? '#dcfce7' : '#fef9c3', color: p.status === 'publish' ? '#166534' : '#854d0e', padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
+                            {p.status === 'publish' ? '✅ Publicat' : '📝 Ciornă'}
+                          </span>
+                          <span style={{ background: '#f0f0f0', padding: '3px 10px', borderRadius: '20px', fontSize: '12px' }}>{p.tip_tranzactie}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <button onClick={() => window.open(p.link, '_blank')} style={{ background: '#f0f0f0', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>👁️ Vezi</button>
-                    <button onClick={() => deschideEditare(p.id)} style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>✏️ Editează</button>
-                    <button onClick={() => stergeProprietate(p.id)} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>🗑️ Șterge</button>
+                    <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                      <button onClick={() => window.open(p.link, '_blank')} style={{ background: '#f0f0f0', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>👁️ Vezi</button>
+                      <button onClick={() => deschideEditare(p.id)} style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>✏️ Editează</button>
+                      <button onClick={() => stergeProprietate(p.id)} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>🗑️ Șterge</button>
+                    </div>
                   </div>
                 </div>
               ))}
