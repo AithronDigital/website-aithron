@@ -106,6 +106,7 @@ export default function SectiuneProprietati() {
       const getTerm = (tax: string) => terms.find((t: any) => t.taxonomy === tax)?.slug || ''
       const getTermName = (tax: string) => terms.find((t: any) => t.taxonomy === tax)?.name || ''
       const m = p.meta || {}
+
       setFormProp({
         titlu: p.title?.rendered || '',
         continut: p.content?.raw || '',
@@ -212,17 +213,25 @@ export default function SectiuneProprietati() {
       const { data: setari, error: errSetari } = await supabase
         .from('setari_agent').select('wp_url, wp_username, wp_password').single()
       if (errSetari || !setari) throw new Error('Nu am găsit credențialele WordPress.')
+
       const token = await getToken(setari)
+
       let pozeIds: number[] = []
-      if (pozeSelectate.length > 0) pozeIds = await uploadPozeWordPress(token, setari.wp_url)
+      if (pozeSelectate.length > 0) {
+        pozeIds = await uploadPozeWordPress(token, setari.wp_url)
+      }
+
       const [tipTranzactieId, tipProprietateId, stareId, locatieId] = await Promise.all([
         getTaxonomyTermId(setari.wp_url, token, 'tip_tranzactie', formProp.tip_tranzactie),
         getTaxonomyTermId(setari.wp_url, token, 'tip_de_proprietate', formProp.tip_de_proprietate),
         getTaxonomyTermId(setari.wp_url, token, 'stare_proprietate', formProp.stare_proprietate),
         getTaxonomyTermId(setari.wp_url, token, 'locatie', formProp.locatie),
       ])
+
       const bodyData: Record<string, any> = {
-        title: formProp.titlu, content: formProp.continut, status,
+        title: formProp.titlu,
+        content: formProp.continut,
+        status,
         ...(pozeIds.length > 0 ? { featured_media: pozeIds[0] } : {}),
         ...(tipTranzactieId ? { tip_tranzactie: [tipTranzactieId] } : {}),
         ...(tipProprietateId ? { tip_de_proprietate: [tipProprietateId] } : {}),
@@ -238,34 +247,55 @@ export default function SectiuneProprietati() {
           s_teren: formProp.s_teren ? Number(formProp.s_teren) : 0,
           latitudine: formProp.latitudine ? Number(formProp.latitudine) : 0,
           longitudine: formProp.longitudine ? Number(formProp.longitudine) : 0,
-          etaj: formProp.etaj || '', numar_whatsapp_agent: formProp.numar_whatsapp_agent || '',
+          etaj: formProp.etaj || '',
+          numar_whatsapp_agent: formProp.numar_whatsapp_agent || '',
           id_proprietate: formProp.id_proprietate || '',
-          recomandat: formProp.recomandat ? 1 : 0, nou: formProp.nou ? 1 : 0,
-          oferta: formProp.oferta ? 1 : 0, exclusiv: formProp.exclusiv ? 1 : 0,
-          vandut: formProp.vandut ? 1 : 0, inchiriat: formProp.inchiriat ? 1 : 0,
-          premium: formProp.premium ? 1 : 0, balcon: formProp.balcon ? 1 : 0,
-          terasa: formProp.terasa ? 1 : 0, garaj: formProp.garaj ? 1 : 0,
-          curte: formProp.curte ? 1 : 0, gradina: formProp.gradina ? 1 : 0,
+          recomandat: formProp.recomandat ? 1 : 0,
+          nou: formProp.nou ? 1 : 0,
+          oferta: formProp.oferta ? 1 : 0,
+          exclusiv: formProp.exclusiv ? 1 : 0,
+          vandut: formProp.vandut ? 1 : 0,
+          inchiriat: formProp.inchiriat ? 1 : 0,
+          premium: formProp.premium ? 1 : 0,
+          balcon: formProp.balcon ? 1 : 0,
+          terasa: formProp.terasa ? 1 : 0,
+          garaj: formProp.garaj ? 1 : 0,
+          curte: formProp.curte ? 1 : 0,
+          gradina: formProp.gradina ? 1 : 0,
           spatiu_depozitare: formProp.spatiu_depozitare ? 1 : 0,
-          curent: formProp.curent ? 1 : 0, apa: formProp.apa ? 1 : 0,
-          gaz: formProp.gaz ? 1 : 0, canalizare: formProp.canalizare ? 1 : 0,
-          acces_internet: formProp.acces_internet ? 1 : 0, fibra_optica: formProp.fibra_optica ? 1 : 0,
-          centrala_proprie: formProp.centrala_proprie ? 1 : 0, calorifere: formProp.calorifere ? 1 : 0,
+          curent: formProp.curent ? 1 : 0,
+          apa: formProp.apa ? 1 : 0,
+          gaz: formProp.gaz ? 1 : 0,
+          canalizare: formProp.canalizare ? 1 : 0,
+          acces_internet: formProp.acces_internet ? 1 : 0,
+          fibra_optica: formProp.fibra_optica ? 1 : 0,
+          centrala_proprie: formProp.centrala_proprie ? 1 : 0,
+          calorifere: formProp.calorifere ? 1 : 0,
           aer_conditionat: formProp.aer_conditionat ? 1 : 0,
           incalzire_pardoseala: formProp.incalzire_pardoseala ? 1 : 0,
-          apometre: formProp.apometre ? 1 : 0, interfon: formProp.interfon ? 1 : 0,
-          complet_mobilat: formProp.complet_mobilat ? 1 : 0, partial_mobilat: formProp.partial_mobilat ? 1 : 0,
-          bucatarie_mobilata: formProp.bucatarie_mobilata ? 1 : 0, bucatarie_utilata: formProp.bucatarie_utilata ? 1 : 0,
-          catv: formProp.catv ? 1 : 0, usa_intrare_metal: formProp.usa_intrare_metal ? 1 : 0,
-          usa_intrare_lemn: formProp.usa_intrare_lemn ? 1 : 0, ferestre_pvc: formProp.ferestre_pvc ? 1 : 0,
-          ferestre_lemn: formProp.ferestre_lemn ? 1 : 0, ferestre_termopan: formProp.ferestre_termopan ? 1 : 0,
-          gresie: formProp.gresie ? 1 : 0, parchet: formProp.parchet ? 1 : 0,
-          faianta: formProp.faianta ? 1 : 0, izolatie_exterior: formProp.izolatie_exterior ? 1 : 0,
+          apometre: formProp.apometre ? 1 : 0,
+          interfon: formProp.interfon ? 1 : 0,
+          complet_mobilat: formProp.complet_mobilat ? 1 : 0,
+          partial_mobilat: formProp.partial_mobilat ? 1 : 0,
+          bucatarie_mobilata: formProp.bucatarie_mobilata ? 1 : 0,
+          bucatarie_utilata: formProp.bucatarie_utilata ? 1 : 0,
+          catv: formProp.catv ? 1 : 0,
+          usa_intrare_metal: formProp.usa_intrare_metal ? 1 : 0,
+          usa_intrare_lemn: formProp.usa_intrare_lemn ? 1 : 0,
+          ferestre_pvc: formProp.ferestre_pvc ? 1 : 0,
+          ferestre_lemn: formProp.ferestre_lemn ? 1 : 0,
+          ferestre_termopan: formProp.ferestre_termopan ? 1 : 0,
+          gresie: formProp.gresie ? 1 : 0,
+          parchet: formProp.parchet ? 1 : 0,
+          faianta: formProp.faianta ? 1 : 0,
+          izolatie_exterior: formProp.izolatie_exterior ? 1 : 0,
         }
       }
+
       const url = editId
         ? `${setari.wp_url}/wp-json/wp/v2/proprietati/${editId}`
         : `${setari.wp_url}/wp-json/wp/v2/proprietati`
+
       const resPost = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -273,12 +303,16 @@ export default function SectiuneProprietati() {
       })
       const postData = await resPost.json()
       if (!postData.id) throw new Error(postData.message || JSON.stringify(postData))
+
       if (pozeIds.length > 0) {
         await fetch(`${setari.wp_url}/wp-json/custom/v1/galerie/${postData.id}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ galerie_foto: pozeIds })
         })
+      }
+
+      if (pozeIds.length > 0) {
         await Promise.all(pozeIds.map(mediaId =>
           fetch(`${setari.wp_url}/wp-json/wp/v2/media/${mediaId}`, {
             method: 'POST',
@@ -287,6 +321,7 @@ export default function SectiuneProprietati() {
           })
         ))
       }
+
       await incarcaProprietati()
       setPublicare('success')
       setFormProp({ ...formGolProprietate })
@@ -308,7 +343,7 @@ export default function SectiuneProprietati() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', flexWrap: 'wrap', gap: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
         <div>
           <h1 style={{ margin: 0 }}>🏡 Proprietăți</h1>
           <p style={{ color: '#666', margin: '5px 0 0' }}>Publică anunțuri direct pe site-ul tău.</p>
@@ -328,7 +363,7 @@ export default function SectiuneProprietati() {
       )}
 
       {adaugaProprietate && (
-        <div style={{ background: 'white', borderRadius: '14px', padding: esteDesktop ? '35px' : '20px', boxShadow: '0 2px 12px rgba(0,0,0,0.08)', marginBottom: '30px' }}>
+        <div style={{ background: 'white', borderRadius: '14px', padding: '35px', boxShadow: '0 2px 12px rgba(0,0,0,0.08)', marginBottom: '30px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
             <h2 style={{ margin: 0 }}>{editId ? '✏️ Editează proprietatea' : 'Proprietate nouă'}</h2>
             <button onClick={() => { setAdaugaProprietate(false); setPozeSelectate([]); setPozePreview([]); setEditId(null) }}
@@ -339,7 +374,7 @@ export default function SectiuneProprietati() {
           <div style={{ marginBottom: '30px' }}>
             <p style={{ color: '#888', fontSize: '13px', marginBottom: '15px' }}>{editId ? 'Adaugă poze noi sau lasă gol pentru a păstra pozele existente.' : 'Adaugă până la 20 fotografii.'}</p>
             {pozePreview.length > 0 && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '10px', marginBottom: '15px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '10px', marginBottom: '15px' }}>
                 {pozePreview.map((src, i) => (
                   <div key={i} style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', aspectRatio: '1', border: i === 0 ? '3px solid #e94560' : '2px solid #f0f0f0' }}>
                     <img src={src} alt={`Poza ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -359,7 +394,7 @@ export default function SectiuneProprietati() {
           </div>
 
           <span style={secTitle}>📋 Informații de bază</span>
-          <div style={{ display: 'grid', gridTemplateColumns: esteDesktop ? '1fr 1fr' : '1fr', gap: '15px', marginBottom: '25px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '25px' }}>
             <div style={{ gridColumn: '1 / -1' }}>
               <label style={lbl}>Titlu anunț *</label>
               <input value={formProp.titlu} onChange={e => setFormProp({ ...formProp, titlu: e.target.value })} placeholder="Ex: Apartament 3 camere, zona centrală, Brașov" style={{ ...inp, fontSize: '15px' }} />
@@ -403,7 +438,7 @@ export default function SectiuneProprietati() {
           </div>
 
           <span style={secTitle}>📐 Suprafețe și caracteristici</span>
-          <div style={{ display: 'grid', gridTemplateColumns: esteDesktop ? '1fr 1fr 1fr' : '1fr 1fr', gap: '15px', marginBottom: '25px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', marginBottom: '25px' }}>
             {[
               { key: 'pret', label: 'Preț (€)', placeholder: 'Ex: 95000' },
               { key: 'suprafata_utila', label: 'Suprafață utilă (mp)', placeholder: 'Ex: 65' },
@@ -424,7 +459,7 @@ export default function SectiuneProprietati() {
           </div>
 
           <span style={secTitle}>📍 Localizare hartă (opțional)</span>
-          <div style={{ display: 'grid', gridTemplateColumns: esteDesktop ? '1fr 1fr' : '1fr', gap: '15px', marginBottom: '25px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '25px' }}>
             <div>
               <label style={lbl}>Latitudine</label>
               <input value={formProp.latitudine || ''} onChange={e => setFormProp({ ...formProp, latitudine: e.target.value })} placeholder="Ex: 45.6427" style={inp} />
@@ -473,7 +508,7 @@ export default function SectiuneProprietati() {
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: '12px', paddingTop: '20px', borderTop: '1px solid #f0f0f0', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '12px', paddingTop: '20px', borderTop: '1px solid #f0f0f0' }}>
             <button onClick={() => salveazaProprietate('publish')} disabled={publicare === 'loading'}
               style={{ background: publicare === 'loading' ? '#ccc' : '#e94560', color: 'white', border: 'none', padding: '14px 32px', borderRadius: '8px', cursor: publicare === 'loading' ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '15px' }}>
               {publicare === 'loading' ? '⏳ Se salvează...' : editId ? '💾 Salvează modificările' : '🚀 Publică pe site'}
@@ -492,7 +527,7 @@ export default function SectiuneProprietati() {
 
       {!adaugaProprietate && (
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: '#1a1a2e' }}>📋 Proprietățile mele ({proprietati.length})</h2>
             <input value={cautare} onChange={e => setCautare(e.target.value)}
               placeholder="🔍 Caută după titlu sau locație..."
@@ -511,34 +546,66 @@ export default function SectiuneProprietati() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               {proprietatiFiltrate.map(p => (
                 <div key={p.id} style={{ background: 'white', borderRadius: '12px', padding: '20px 25px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '15px', flexWrap: esteDesktop ? 'nowrap' as const : 'wrap' as const }}>
-                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center', flex: 1, minWidth: 0 }}>
-                      {p.poza ? (
-                        <img src={p.poza} alt={p.titlu} style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '8px', flexShrink: 0 }} />
-                      ) : (
-                        <div style={{ width: '80px', height: '60px', background: '#f0f0f0', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', flexShrink: 0 }}>🏡</div>
-                      )}
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '4px', wordBreak: 'break-word' }} dangerouslySetInnerHTML={{ __html: p.titlu }} />
-                        <div style={{ color: '#666', fontSize: '13px' }}>
-                          {p.locatie && `📍 ${p.locatie}`}
-                          {p.pret && ` · 💰 ${p.pret} €`}
-                          {p.suprafata && ` · 📐 ${p.suprafata} mp`}
-                        </div>
-                        <div style={{ marginTop: '6px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                          <span style={{ background: p.status === 'publish' ? '#dcfce7' : '#fef9c3', color: p.status === 'publish' ? '#166534' : '#854d0e', padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
-                            {p.status === 'publish' ? '✅ Publicat' : '📝 Ciornă'}
-                          </span>
-                          <span style={{ background: '#f0f0f0', padding: '3px 10px', borderRadius: '20px', fontSize: '12px' }}>{p.tip_tranzactie}</span>
+                  {/* Desktop: tot pe un rand. Mobil: info sus, butoane jos */}
+                  {esteDesktop ? (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                        {p.poza ? (
+                          <img src={p.poza} alt={p.titlu} style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '8px' }} />
+                        ) : (
+                          <div style={{ width: '80px', height: '60px', background: '#f0f0f0', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🏡</div>
+                        )}
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '4px' }} dangerouslySetInnerHTML={{ __html: p.titlu }} />
+                          <div style={{ color: '#666', fontSize: '13px' }}>
+                            {p.locatie && `📍 ${p.locatie}`}
+                            {p.pret && ` · 💰 ${p.pret} €`}
+                            {p.suprafata && ` · 📐 ${p.suprafata} mp`}
+                          </div>
+                          <div style={{ marginTop: '6px', display: 'flex', gap: '8px' }}>
+                            <span style={{ background: p.status === 'publish' ? '#dcfce7' : '#fef9c3', color: p.status === 'publish' ? '#166534' : '#854d0e', padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
+                              {p.status === 'publish' ? '✅ Publicat' : '📝 Ciornă'}
+                            </span>
+                            <span style={{ background: '#f0f0f0', padding: '3px 10px', borderRadius: '20px', fontSize: '12px' }}>{p.tip_tranzactie}</span>
+                          </div>
                         </div>
                       </div>
+                      <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                        <button onClick={() => window.open(p.link, '_blank')} style={{ background: '#f0f0f0', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>👁️ Vezi</button>
+                        <button onClick={() => deschideEditare(p.id)} style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>✏️ Editează</button>
+                        <button onClick={() => stergeProprietate(p.id)} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>🗑️ Șterge</button>
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-                      <button onClick={() => window.open(p.link, '_blank')} style={{ background: '#f0f0f0', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>👁️ Vezi</button>
-                      <button onClick={() => deschideEditare(p.id)} style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>✏️ Editează</button>
-                      <button onClick={() => stergeProprietate(p.id)} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>🗑️ Șterge</button>
+                  ) : (
+                    <div>
+                      <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginBottom: '12px' }}>
+                        {p.poza ? (
+                          <img src={p.poza} alt={p.titlu} style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '8px', flexShrink: 0 }} />
+                        ) : (
+                          <div style={{ width: '80px', height: '60px', background: '#f0f0f0', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', flexShrink: 0 }}>🏡</div>
+                        )}
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontWeight: 700, fontSize: '15px', marginBottom: '4px', wordBreak: 'break-word' }} dangerouslySetInnerHTML={{ __html: p.titlu }} />
+                          <div style={{ color: '#666', fontSize: '13px' }}>
+                            {p.locatie && `📍 ${p.locatie}`}
+                            {p.pret && ` · 💰 ${p.pret} €`}
+                            {p.suprafata && ` · 📐 ${p.suprafata} mp`}
+                          </div>
+                          <div style={{ marginTop: '6px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                            <span style={{ background: p.status === 'publish' ? '#dcfce7' : '#fef9c3', color: p.status === 'publish' ? '#166534' : '#854d0e', padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
+                              {p.status === 'publish' ? '✅ Publicat' : '📝 Ciornă'}
+                            </span>
+                            <span style={{ background: '#f0f0f0', padding: '3px 10px', borderRadius: '20px', fontSize: '12px' }}>{p.tip_tranzactie}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button onClick={() => window.open(p.link, '_blank')} style={{ background: '#f0f0f0', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>👁️ Vezi</button>
+                        <button onClick={() => deschideEditare(p.id)} style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>✏️ Editează</button>
+                        <button onClick={() => stergeProprietate(p.id)} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>🗑️ Șterge</button>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
