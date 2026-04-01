@@ -24,12 +24,20 @@ export default function SectiuneBlog() {
   const [categoriaNova, setCategoriaNova] = useState('')
   const [adaugaCategorie, setAdaugaCategorie] = useState(false)
   const [etichetaNova, setEtichetaNova] = useState('')
+  const [esteDesktop, setEsteDesktop] = useState(true)
 
   const [form, setForm] = useState({
     titlu: '', continut: '', meta_titlu: '', meta_descriere: '', etichete: '',
   })
 
-  useEffect(() => { incarcaArticole(); incarcaCategorii() }, [])
+  useEffect(() => {
+    incarcaArticole()
+    incarcaCategorii()
+    const verificaDimensiune = () => setEsteDesktop(window.innerWidth >= 900)
+    verificaDimensiune()
+    window.addEventListener('resize', verificaDimensiune)
+    return () => window.removeEventListener('resize', verificaDimensiune)
+  }, [])
 
   const incarcaArticole = async () => {
     try {
@@ -184,7 +192,6 @@ export default function SectiuneBlog() {
         }
       }
 
-      // FIX: căutare etichetă după name nu după slug
       if (form.etichete) {
         const tagNames = form.etichete.split(',').map(t => t.trim()).filter(Boolean)
         const tagIds: number[] = []
@@ -247,7 +254,7 @@ export default function SectiuneBlog() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', flexWrap: 'wrap', gap: '10px' }}>
         <div>
           <h1 style={{ margin: 0 }}>📝 Blog</h1>
           <p style={{ color: '#666', margin: '5px 0 0' }}>Publică articole pe site-ul tău.</p>
@@ -267,7 +274,7 @@ export default function SectiuneBlog() {
       )}
 
       {adaugaArticol && (
-        <div style={{ background: 'white', borderRadius: '14px', padding: '35px', boxShadow: '0 2px 12px rgba(0,0,0,0.08)', marginBottom: '30px' }}>
+        <div style={{ background: 'white', borderRadius: '14px', padding: esteDesktop ? '35px' : '20px', boxShadow: '0 2px 12px rgba(0,0,0,0.08)', marginBottom: '30px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
             <h2 style={{ margin: 0 }}>{editId ? '✏️ Editează articolul' : '📝 Articol nou'}</h2>
             <button onClick={() => { setAdaugaArticol(false); setEditId(null); setPozaSelectata(null); setPozaPreview('') }}
@@ -330,7 +337,7 @@ export default function SectiuneBlog() {
                 + Categorie nouă
               </button>
             ) : (
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <input value={categoriaNova} onChange={e => setCategoriaNova(e.target.value)}
                   placeholder="Nume categorie nouă" style={{ ...inp, margin: 0, width: '220px' }}
                   onKeyDown={e => e.key === 'Enter' && creeazaCategorie()} />
@@ -357,7 +364,7 @@ export default function SectiuneBlog() {
                 </span>
               ))}
             </div>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
               <input value={etichetaNova} onChange={e => setEtichetaNova(e.target.value)}
                 placeholder="Adaugă etichetă..." style={{ ...inp, margin: 0, width: '220px' }}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); adaugaEticheta() } }} />
@@ -392,7 +399,7 @@ export default function SectiuneBlog() {
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: '12px', paddingTop: '20px', borderTop: '1px solid #f0f0f0' }}>
+          <div style={{ display: 'flex', gap: '12px', paddingTop: '20px', borderTop: '1px solid #f0f0f0', flexWrap: 'wrap' }}>
             <button onClick={() => salveazaArticol('publish')} disabled={publicare === 'loading'}
               style={{ background: publicare === 'loading' ? '#ccc' : '#e94560', color: 'white', border: 'none', padding: '14px 32px', borderRadius: '8px', cursor: publicare === 'loading' ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '15px' }}>
               {publicare === 'loading' ? '⏳ Se salvează...' : editId ? '💾 Salvează modificările' : '🚀 Publică articolul'}
@@ -411,11 +418,11 @@ export default function SectiuneBlog() {
 
       {!adaugaArticol && (
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
             <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: '#1a1a2e' }}>📋 Articolele mele ({articole.length})</h2>
             <input value={cautare} onChange={e => setCautare(e.target.value)}
               placeholder="🔍 Caută după titlu..."
-              style={{ ...inp, width: '300px', margin: 0 }} />
+              style={{ ...inp, width: esteDesktop ? '300px' : '100%', margin: 0 }} />
           </div>
           {loading ? (
             <div style={{ background: 'white', borderRadius: '14px', padding: '60px', textAlign: 'center' }}>
@@ -429,31 +436,62 @@ export default function SectiuneBlog() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               {articoleFiltrate.map(a => (
-                <div key={a.id} style={{ background: 'white', borderRadius: '12px', padding: '20px 25px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                    {a.poza ? (
-                      <img src={a.poza} alt={a.titlu} style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '8px' }} />
-                    ) : (
-                      <div style={{ width: '80px', height: '60px', background: '#f0f0f0', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>📝</div>
-                    )}
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '4px' }} dangerouslySetInnerHTML={{ __html: a.titlu }} />
-                      <div style={{ color: '#666', fontSize: '13px' }}>
-                        {a.categorie && `📁 ${a.categorie}`}
-                        {a.data && ` · 📅 ${a.data}`}
+                <div key={a.id} style={{ background: 'white', borderRadius: '12px', padding: '20px 25px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                  {esteDesktop ? (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                        {a.poza ? (
+                          <img src={a.poza} alt={a.titlu} style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '8px' }} />
+                        ) : (
+                          <div style={{ width: '80px', height: '60px', background: '#f0f0f0', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>📝</div>
+                        )}
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '4px' }} dangerouslySetInnerHTML={{ __html: a.titlu }} />
+                          <div style={{ color: '#666', fontSize: '13px' }}>
+                            {a.categorie && `📁 ${a.categorie}`}
+                            {a.data && ` · 📅 ${a.data}`}
+                          </div>
+                          <div style={{ marginTop: '6px' }}>
+                            <span style={{ background: a.status === 'publish' ? '#dcfce7' : '#fef9c3', color: a.status === 'publish' ? '#166534' : '#854d0e', padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
+                              {a.status === 'publish' ? '✅ Publicat' : '📝 Ciornă'}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <div style={{ marginTop: '6px' }}>
-                        <span style={{ background: a.status === 'publish' ? '#dcfce7' : '#fef9c3', color: a.status === 'publish' ? '#166534' : '#854d0e', padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
-                          {a.status === 'publish' ? '✅ Publicat' : '📝 Ciornă'}
-                        </span>
+                      <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                        <button onClick={() => window.open(a.link, '_blank')} style={{ background: '#f0f0f0', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>👁️ Vezi</button>
+                        <button onClick={() => deschideEditare(a.id)} style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>✏️ Editează</button>
+                        <button onClick={() => stergeArticol(a.id)} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>🗑️ Șterge</button>
                       </div>
                     </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-                    <button onClick={() => window.open(a.link, '_blank')} style={{ background: '#f0f0f0', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>👁️ Vezi</button>
-                    <button onClick={() => deschideEditare(a.id)} style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>✏️ Editează</button>
-                    <button onClick={() => stergeArticol(a.id)} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>🗑️ Șterge</button>
-                  </div>
+                  ) : (
+                    <div>
+                      <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginBottom: '12px' }}>
+                        {a.poza ? (
+                          <img src={a.poza} alt={a.titlu} style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '8px', flexShrink: 0 }} />
+                        ) : (
+                          <div style={{ width: '80px', height: '60px', background: '#f0f0f0', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', flexShrink: 0 }}>📝</div>
+                        )}
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontWeight: 700, fontSize: '15px', marginBottom: '4px', wordBreak: 'break-word' }} dangerouslySetInnerHTML={{ __html: a.titlu }} />
+                          <div style={{ color: '#666', fontSize: '13px' }}>
+                            {a.categorie && `📁 ${a.categorie}`}
+                            {a.data && ` · 📅 ${a.data}`}
+                          </div>
+                          <div style={{ marginTop: '6px' }}>
+                            <span style={{ background: a.status === 'publish' ? '#dcfce7' : '#fef9c3', color: a.status === 'publish' ? '#166534' : '#854d0e', padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
+                              {a.status === 'publish' ? '✅ Publicat' : '📝 Ciornă'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <button onClick={() => window.open(a.link, '_blank')} style={{ background: '#f0f0f0', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>👁️ Vezi</button>
+                        <button onClick={() => deschideEditare(a.id)} style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>✏️ Editează</button>
+                        <button onClick={() => stergeArticol(a.id)} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>🗑️ Șterge</button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
