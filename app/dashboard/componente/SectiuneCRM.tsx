@@ -11,6 +11,7 @@ export default function SectiuneCRM() {
   const [etichetaNouaNume, setEtichetaNouaNume] = useState('')
   const [etichetaNouaCuloare, setEtichetaNouaCuloare] = useState('#3b82f6')
   const [contacte, setContacte] = useState<Contact[]>([])
+  const [esteDesktop, setEsteDesktop] = useState(true)
 
   const [etichete, setEtichete] = useState<Eticheta[]>([
     { id: 1, nume: 'Contactat', culoare: '#3b82f6' },
@@ -25,7 +26,13 @@ export default function SectiuneCRM() {
 
   const esteProprietar = tabActiv === 'vanzare' || tabActiv === 'inchiriere'
 
-  useEffect(() => { incarcaContacte() }, [tabActiv])
+  useEffect(() => {
+    incarcaContacte()
+    const verificaDimensiune = () => setEsteDesktop(window.innerWidth >= 900)
+    verificaDimensiune()
+    window.addEventListener('resize', verificaDimensiune)
+    return () => window.removeEventListener('resize', verificaDimensiune)
+  }, [tabActiv])
 
   const incarcaContacte = async () => {
     setLoading(true)
@@ -105,12 +112,12 @@ export default function SectiuneCRM() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', flexWrap: 'wrap', gap: '10px' }}>
         <div>
           <h1 style={{ margin: 0 }}>👥 Clienți (CRM)</h1>
           <p style={{ color: '#666', margin: '5px 0 0' }}>Gestionează toate contactele tale.</p>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <button onClick={() => setGestioneazaEtichete(!gestioneazaEtichete)} style={{ background: gestioneazaEtichete ? '#1a1a2e' : 'white', color: gestioneazaEtichete ? 'white' : '#333', border: '1px solid #ddd', padding: '10px 18px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 600 }}>
             🏷️ Etichete
           </button>
@@ -154,7 +161,7 @@ export default function SectiuneCRM() {
       {adauga && (
         <div style={{ background: 'white', borderRadius: '12px', padding: '25px', marginBottom: '25px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
           <h3 style={{ marginTop: 0 }}>Contact nou — {taburi.find(t => t.id === tabActiv)?.label}</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: esteDesktop ? '1fr 1fr' : '1fr', gap: '15px' }}>
             {[
               { key: 'nume', label: 'Nume complet', placeholder: 'Ex: Ion Popescu', type: 'text' },
               { key: 'telefon', label: 'Telefon', placeholder: '07XX XXX XXX', type: 'tel' },
@@ -242,38 +249,73 @@ export default function SectiuneCRM() {
         {!loading && getLista().length === 0 && <div style={{ background: 'white', borderRadius: '12px', padding: '40px', textAlign: 'center', color: '#888' }}>Nu ai contacte în această categorie. Adaugă primul! 👆</div>}
         {!loading && getLista().map(contact => (
           <div key={contact.id} style={{ background: 'white', borderRadius: '12px', padding: '20px 25px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div style={{ display: 'flex', gap: '15px', alignItems: 'flex-start' }}>
-                <div style={{ width: '45px', height: '45px', borderRadius: '50%', background: '#e94560', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '18px', flexShrink: 0 }}>{contact.nume.charAt(0)}</div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '16px' }}>{contact.nume}</div>
-                  <div style={{ color: '#666', fontSize: '13px', marginTop: '3px' }}>📞 {contact.telefon} · ✉️ {contact.email}</div>
-                  {esteProprietar && <div style={{ color: '#444', fontSize: '13px', marginTop: '6px' }}>📍 {contact.adresa} · 💰 {contact.pret} · 📐 {contact.suprafata}mp · 🚪 {contact.camere} cam · 📄 Acte: {contact.acte}</div>}
-                  {!esteProprietar && <div style={{ color: '#444', fontSize: '13px', marginTop: '6px' }}>💰 Buget: {contact.buget} · 📍 Zone: {contact.zone} · 🚪 {contact.camere_dorite} camere</div>}
-                  {contact.nota && <div style={{ color: '#888', fontSize: '13px', marginTop: '4px' }}>💬 {contact.nota}</div>}
-                  {contact.etichete && contact.etichete.length > 0 && (
-                    <div style={{ display: 'flex', gap: '6px', marginTop: '10px', flexWrap: 'wrap' }}>
-                      {contact.etichete.map((eid: number) => {
-                        const et = etichete.find(e => e.id === eid)
-                        if (!et) return null
-                        return <span key={eid} onClick={() => toggleEtichetaContact(contact.id, eid)} style={{ background: et.culoare, color: 'white', borderRadius: '20px', padding: '3px 12px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>{et.nume} ×</span>
-                      })}
+            {esteDesktop ? (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', gap: '15px', alignItems: 'flex-start' }}>
+                  <div style={{ width: '45px', height: '45px', borderRadius: '50%', background: '#e94560', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '18px', flexShrink: 0 }}>{contact.nume.charAt(0)}</div>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '16px' }}>{contact.nume}</div>
+                    <div style={{ color: '#666', fontSize: '13px', marginTop: '3px' }}>📞 {contact.telefon} · ✉️ {contact.email}</div>
+                    {esteProprietar && <div style={{ color: '#444', fontSize: '13px', marginTop: '6px' }}>📍 {contact.adresa} · 💰 {contact.pret} · 📐 {contact.suprafata}mp · 🚪 {contact.camere} cam · 📄 Acte: {contact.acte}</div>}
+                    {!esteProprietar && <div style={{ color: '#444', fontSize: '13px', marginTop: '6px' }}>💰 Buget: {contact.buget} · 📍 Zone: {contact.zone} · 🚪 {contact.camere_dorite} camere</div>}
+                    {contact.nota && <div style={{ color: '#888', fontSize: '13px', marginTop: '4px' }}>💬 {contact.nota}</div>}
+                    {contact.etichete && contact.etichete.length > 0 && (
+                      <div style={{ display: 'flex', gap: '6px', marginTop: '10px', flexWrap: 'wrap' }}>
+                        {contact.etichete.map((eid: number) => {
+                          const et = etichete.find(e => e.id === eid)
+                          if (!et) return null
+                          return <span key={eid} onClick={() => toggleEtichetaContact(contact.id, eid)} style={{ background: et.culoare, color: 'white', borderRadius: '20px', padding: '3px 12px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>{et.nume} ×</span>
+                        })}
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', gap: '5px', marginTop: '8px', flexWrap: 'wrap' }}>
+                      {etichete.filter(e => !contact.etichete?.includes(e.id)).map(e => (
+                        <span key={e.id} onClick={() => toggleEtichetaContact(contact.id, e.id)} style={{ background: 'transparent', color: '#aaa', border: '1px dashed #ccc', borderRadius: '20px', padding: '2px 10px', fontSize: '11px', cursor: 'pointer' }}>+ {e.nume}</span>
+                      ))}
                     </div>
-                  )}
-                  <div style={{ display: 'flex', gap: '5px', marginTop: '8px', flexWrap: 'wrap' }}>
-                    {etichete.filter(e => !contact.etichete?.includes(e.id)).map(e => (
-                      <span key={e.id} onClick={() => toggleEtichetaContact(contact.id, e.id)} style={{ background: 'transparent', color: '#aaa', border: '1px dashed #ccc', borderRadius: '20px', padding: '2px 10px', fontSize: '11px', cursor: 'pointer' }}>+ {e.nume}</span>
-                    ))}
                   </div>
                 </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                  <span style={{ background: '#f0f0f0', padding: '5px 12px', borderRadius: '20px', fontSize: '13px' }}>{contact.tip_proprietate}</span>
+                  <span style={{ background: (statusColor[contact.status] || '#888') + '22', color: statusColor[contact.status] || '#888', padding: '5px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: 600 }}>{contact.status}</span>
+                  <button onClick={() => deschideWhatsapp(contact.telefon, contact.nume)} style={{ background: '#25D366', color: 'white', border: 'none', width: '38px', height: '38px', borderRadius: '8px', cursor: 'pointer', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>💬</button>
+                  <button onClick={() => sterge(contact.id)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '18px', color: '#ccc' }}>🗑️</button>
+                </div>
               </div>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
-                <span style={{ background: '#f0f0f0', padding: '5px 12px', borderRadius: '20px', fontSize: '13px' }}>{contact.tip_proprietate}</span>
-                <span style={{ background: (statusColor[contact.status] || '#888') + '22', color: statusColor[contact.status] || '#888', padding: '5px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: 600 }}>{contact.status}</span>
-                <button onClick={() => deschideWhatsapp(contact.telefon, contact.nume)} style={{ background: '#25D366', color: 'white', border: 'none', width: '38px', height: '38px', borderRadius: '8px', cursor: 'pointer', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>💬</button>
-                <button onClick={() => sterge(contact.id)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '18px', color: '#ccc' }}>🗑️</button>
+            ) : (
+              <div>
+                <div style={{ display: 'flex', gap: '15px', alignItems: 'flex-start', marginBottom: '12px' }}>
+                  <div style={{ width: '45px', height: '45px', borderRadius: '50%', background: '#e94560', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '18px', flexShrink: 0 }}>{contact.nume.charAt(0)}</div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: '16px' }}>{contact.nume}</div>
+                    <div style={{ color: '#666', fontSize: '13px', marginTop: '3px' }}>📞 {contact.telefon} · ✉️ {contact.email}</div>
+                    {esteProprietar && <div style={{ color: '#444', fontSize: '13px', marginTop: '6px' }}>📍 {contact.adresa} · 💰 {contact.pret} · 📐 {contact.suprafata}mp · 🚪 {contact.camere} cam · 📄 Acte: {contact.acte}</div>}
+                    {!esteProprietar && <div style={{ color: '#444', fontSize: '13px', marginTop: '6px' }}>💰 Buget: {contact.buget} · 📍 Zone: {contact.zone} · 🚪 {contact.camere_dorite} camere</div>}
+                    {contact.nota && <div style={{ color: '#888', fontSize: '13px', marginTop: '4px' }}>💬 {contact.nota}</div>}
+                    {contact.etichete && contact.etichete.length > 0 && (
+                      <div style={{ display: 'flex', gap: '6px', marginTop: '10px', flexWrap: 'wrap' }}>
+                        {contact.etichete.map((eid: number) => {
+                          const et = etichete.find(e => e.id === eid)
+                          if (!et) return null
+                          return <span key={eid} onClick={() => toggleEtichetaContact(contact.id, eid)} style={{ background: et.culoare, color: 'white', borderRadius: '20px', padding: '3px 12px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>{et.nume} ×</span>
+                        })}
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', gap: '5px', marginTop: '8px', flexWrap: 'wrap' }}>
+                      {etichete.filter(e => !contact.etichete?.includes(e.id)).map(e => (
+                        <span key={e.id} onClick={() => toggleEtichetaContact(contact.id, e.id)} style={{ background: 'transparent', color: '#aaa', border: '1px dashed #ccc', borderRadius: '20px', padding: '2px 10px', fontSize: '11px', cursor: 'pointer' }}>+ {e.nume}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <span style={{ background: '#f0f0f0', padding: '5px 12px', borderRadius: '20px', fontSize: '13px' }}>{contact.tip_proprietate}</span>
+                  <span style={{ background: (statusColor[contact.status] || '#888') + '22', color: statusColor[contact.status] || '#888', padding: '5px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: 600 }}>{contact.status}</span>
+                  <button onClick={() => deschideWhatsapp(contact.telefon, contact.nume)} style={{ background: '#25D366', color: 'white', border: 'none', width: '38px', height: '38px', borderRadius: '8px', cursor: 'pointer', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>💬</button>
+                  <button onClick={() => sterge(contact.id)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '18px', color: '#ccc' }}>🗑️</button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         ))}
       </div>
