@@ -28,8 +28,15 @@ export default function SectiuneEcard() {
   const [copiat, setCopiat] = useState(false)
   const [copiatQR, setCopiatQR] = useState(false)
   const [aratQR, setAratQR] = useState(false)
+  const [esteDesktop, setEsteDesktop] = useState(true)
 
-  useEffect(() => { incarcaEcard() }, [])
+  useEffect(() => {
+    incarcaEcard()
+    const verificaDimensiune = () => setEsteDesktop(window.innerWidth >= 900)
+    verificaDimensiune()
+    window.addEventListener('resize', verificaDimensiune)
+    return () => window.removeEventListener('resize', verificaDimensiune)
+  }, [])
 
   const incarcaEcard = async () => {
     try {
@@ -130,7 +137,6 @@ export default function SectiuneEcard() {
       setCopiatQR(true)
       setTimeout(() => setCopiatQR(false), 3000)
     } catch {
-      // Fallback — copiaza URL-ul QR
       await navigator.clipboard.writeText(url)
       setCopiatQR(true)
       setTimeout(() => setCopiatQR(false), 3000)
@@ -150,7 +156,7 @@ export default function SectiuneEcard() {
 
   return (
     <div>
-      {/* HEADER CU 4 BUTOANE */}
+      {/* HEADER */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', flexWrap: 'wrap', gap: '15px' }}>
         <div>
           <h1 style={{ margin: 0 }}>👤 eCard</h1>
@@ -190,7 +196,7 @@ export default function SectiuneEcard() {
             <p style={{ color: '#888', fontSize: '13px', margin: '0 0 20px' }}>
               Clientul scanează codul și deschide direct eCard-ul tău.
             </p>
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               <button onClick={descarcaQR}
                 style={{ background: c, color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
                 ⬇️ Descarcă QR
@@ -245,26 +251,22 @@ export default function SectiuneEcard() {
                 {!pozaProfilPreview && '👤'}
               </div>
             </div>
-
             <div style={{ background: 'white', paddingTop: '60px', paddingBottom: '25px', paddingLeft: '20px', paddingRight: '20px', textAlign: 'center' }}>
               <h2 style={{ margin: '0 0 4px', fontSize: '22px', color: cInchis }}>{form.nume || 'Numele Agentului'}</h2>
               <p style={{ margin: '0 0 4px', color: c, fontWeight: 600 }}>{form.titlu || 'Agent Imobiliar'}</p>
               {form.agentie && <p style={{ margin: '0 0 15px', color: '#888', fontSize: '14px' }}>{form.agentie}</p>}
               {form.despre && <p style={{ margin: '0 0 20px', color: '#666', fontSize: '14px', lineHeight: 1.6 }}>{form.despre}</p>}
-
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '15px' }}>
                 {form.whatsapp && <a href={`https://wa.me/${form.whatsapp}`} target="_blank" rel="noreferrer" style={btnStyle('#25D366')}>💬 WhatsApp</a>}
                 {form.telefon && <a href={`tel:${form.telefon}`} style={btnStyle(c)}>📞 {form.telefon}</a>}
                 {form.email && <a href={`mailto:${form.email}`} style={btnStyle(c)}>✉️ {form.email}</a>}
               </div>
-
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '15px' }}>
                 {form.link_site && <a href={form.link_site} target="_blank" rel="noreferrer" style={btnStyle(c)}>🌐 Vizitează Site-ul</a>}
                 {form.link_proprietati && <a href={form.link_proprietati} target="_blank" rel="noreferrer" style={btnStyle(c)}>🏡 Proprietăți</a>}
                 {form.link_servicii && <a href={form.link_servicii} target="_blank" rel="noreferrer" style={btnStyle(c)}>🛠️ Servicii</a>}
                 {form.link_despre_noi && <a href={form.link_despre_noi} target="_blank" rel="noreferrer" style={btnStyle(c)}>👤 Despre noi</a>}
               </div>
-
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '15px' }}>
                 {form.whatsapp_ghid_vanzator && (
                   <a href={`https://wa.me/${form.whatsapp_ghid_vanzator}?text=${encodeURIComponent('Bună ziua! Doresc Ghidul Vânzătorului Gratuit.')}`}
@@ -279,7 +281,6 @@ export default function SectiuneEcard() {
                   </a>
                 )}
               </div>
-
               {(form.facebook || form.instagram || form.linkedin || form.youtube || form.tiktok) && (
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '15px' }}>
                   {form.facebook && <a href={form.facebook} target="_blank" rel="noreferrer" style={{ fontSize: '28px', textDecoration: 'none' }}>📘</a>}
@@ -289,7 +290,6 @@ export default function SectiuneEcard() {
                   {form.tiktok && <a href={form.tiktok} target="_blank" rel="noreferrer" style={{ fontSize: '28px', textDecoration: 'none' }}>🎵</a>}
                 </div>
               )}
-
               <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: '15px', marginTop: '5px' }}>
                 <p style={{ fontSize: '12px', color: '#888', margin: '0 0 8px' }}>Scanează pentru eCard</p>
                 <img src={qrUrl} alt="QR" style={{ width: '80px', height: '80px' }} />
@@ -301,7 +301,7 @@ export default function SectiuneEcard() {
 
       {/* FORMULAR */}
       {!preview && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '25px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: esteDesktop ? '1fr 1fr' : '1fr', gap: '25px' }}>
           <div>
             <div style={{ background: 'white', borderRadius: '14px', padding: '25px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', marginBottom: '20px' }}>
               <h3 style={{ margin: '0 0 20px', color: cInchis }}>📸 Fotografii</h3>
@@ -430,7 +430,7 @@ export default function SectiuneEcard() {
       )}
 
       {!preview && (
-        <div style={{ marginTop: '25px', display: 'flex', gap: '12px' }}>
+        <div style={{ marginTop: '25px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
           <button onClick={salveaza} disabled={salvare === 'loading'}
             style={{ background: salvare === 'loading' ? '#ccc' : '#e94560', color: 'white', border: 'none', padding: '14px 32px', borderRadius: '8px', cursor: salvare === 'loading' ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '15px' }}>
             {salvare === 'loading' ? '⏳ Se salvează...' : '💾 Salvează eCard'}
