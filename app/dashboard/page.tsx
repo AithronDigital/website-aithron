@@ -39,6 +39,25 @@ export default function Dashboard() {
     return () => window.removeEventListener('resize', verificaDimensiune)
   }, [])
 
+  useEffect(() => {
+    if (!verificat) return
+    window.history.pushState({ sectiune }, '', window.location.pathname)
+  }, [sectiune, verificat])
+
+  useEffect(() => {
+    if (!verificat) return
+    const handlePopState = (e: PopStateEvent) => {
+      if (e.state?.sectiune) {
+        setSectiune(e.state.sectiune)
+      } else {
+        setSectiune('dashboard')
+      }
+      setMenuDeschis(false)
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [verificat])
+
   if (!verificat) return null
 
   const navigheaza = (id: string) => {
@@ -46,7 +65,6 @@ export default function Dashboard() {
     setMenuDeschis(false)
   }
 
-  // DESKTOP — sidebar clasic
   if (esteDesktop) {
     return (
       <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif' }}>
@@ -54,7 +72,7 @@ export default function Dashboard() {
           <h2 style={{ color: '#e94560', marginBottom: '40px', fontSize: '20px' }}>🏠 Aithron Digital</h2>
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
             {meniu.map(item => (
-              <button key={item.id} onClick={() => setSectiune(item.id)} style={{
+              <button key={item.id} onClick={() => navigheaza(item.id)} style={{
                 background: sectiune === item.id ? '#e94560' : 'transparent',
                 color: 'white', border: 'none', padding: '12px 15px',
                 borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '15px'
@@ -71,7 +89,7 @@ export default function Dashboard() {
           </button>
         </div>
         <div style={{ flex: 1, padding: '40px', background: '#f5f5f5', overflowY: 'auto' as const }}>
-          {sectiune === 'dashboard' && <SectiuneDashboard onNavigate={setSectiune} />}
+          {sectiune === 'dashboard' && <SectiuneDashboard onNavigate={navigheaza} />}
           {sectiune === 'proprietati' && <SectiuneProprietati />}
           {sectiune === 'crm' && <SectiuneCRM />}
           {sectiune === 'blog' && <SectiuneBlog />}
@@ -83,13 +101,12 @@ export default function Dashboard() {
     )
   }
 
-  // MOBIL / TABLETĂ — hamburger
   return (
     <div style={{ minHeight: '100vh', fontFamily: 'sans-serif', background: '#f5f5f5' }}>
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         background: '#1a1a2e', color: 'white', padding: '15px 20px',
-        position: 'sticky', top: 0, zIndex: 100
+        position: 'sticky' as const, top: 0, zIndex: 100
       }}>
         <h2 style={{ color: '#e94560', margin: 0, fontSize: '18px' }}>🏠 Aithron Digital</h2>
         <button
@@ -126,7 +143,7 @@ export default function Dashboard() {
       )}
 
       <div style={{ padding: '25px 20px' }}>
-        {sectiune === 'dashboard' && <SectiuneDashboard onNavigate={setSectiune} />}
+        {sectiune === 'dashboard' && <SectiuneDashboard onNavigate={navigheaza} />}
         {sectiune === 'proprietati' && <SectiuneProprietati />}
         {sectiune === 'crm' && <SectiuneCRM />}
         {sectiune === 'blog' && <SectiuneBlog />}
