@@ -1,12 +1,26 @@
+'use client'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 
-export default async function EcardPublic() {
-  const { data } = await supabase.from('ecard').select('*').limit(1).single()
-  if (!data) return <div style={{ textAlign: 'center', padding: '50px' }}>eCard indisponibil.</div>
+export default function EcardPublic() {
+  const [data, setData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const incarca = async () => {
+      const { data } = await supabase.from('ecard').select('*').limit(1).single()
+      setData(data)
+      setLoading(false)
+    }
+    incarca()
+  }, [])
+
+  if (loading) return <div style={{ textAlign: 'center', padding: '50px', color: 'white', background: '#1a1a2e', minHeight: '100vh' }}>⏳ Se încarcă...</div>
+  if (!data) return <div style={{ textAlign: 'center', padding: '50px' }}>Cardul electronic este indisponibil.</div>
 
   const c = data.culoare_principala || '#3b82f6'
   const cInchis = '#1a1a2e'
-  const linkEcard = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/ecard`
+  const linkEcard = typeof window !== 'undefined' ? `${window.location.origin}/ecard` : '/ecard'
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(linkEcard)}`
 
   const btn = (culoare: string) => ({
