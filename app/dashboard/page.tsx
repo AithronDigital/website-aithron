@@ -17,22 +17,18 @@ export default function Dashboard() {
   const [sectiune, setSectiune] = useState('dashboard')
   const [menuDeschis, setMenuDeschis] = useState(false)
   const [esteDesktop, setEsteDesktop] = useState(true)
+  const [linkSite, setLinkSite] = useState('')
 
   useEffect(() => {
     const verificaSesiunea = async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        router.replace('/')
-        return
-      }
-      if (session.user.email === 'mirela25lili@gmail.com') {
-        router.replace('/admin')
-        return
-      }
+      if (!session) { router.replace('/'); return }
+      if (session.user.email === 'mirela25lili@gmail.com') { router.replace('/admin'); return }
       setVerificat(true)
+      const { data: ecard } = await supabase.from('ecard').select('link_site').limit(1).single()
+      if (ecard?.link_site) setLinkSite(ecard.link_site)
     }
     verificaSesiunea()
-
     const verificaDimensiune = () => setEsteDesktop(window.innerWidth >= 900)
     verificaDimensiune()
     window.addEventListener('resize', verificaDimensiune)
@@ -47,11 +43,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (!verificat) return
     const handlePopState = (e: PopStateEvent) => {
-      if (e.state?.sectiune) {
-        setSectiune(e.state.sectiune)
-      } else {
-        setSectiune('dashboard')
-      }
+      if (e.state?.sectiune) { setSectiune(e.state.sectiune) } else { setSectiune('dashboard') }
       setMenuDeschis(false)
     }
     window.addEventListener('popstate', handlePopState)
@@ -60,10 +52,17 @@ export default function Dashboard() {
 
   if (!verificat) return null
 
-  const navigheaza = (id: string) => {
-    setSectiune(id)
-    setMenuDeschis(false)
-  }
+  const navigheaza = (id: string) => { setSectiune(id); setMenuDeschis(false) }
+
+  const butonSite = linkSite ? (
+    <a href={linkSite} target="_blank" rel="noreferrer" style={{
+      display: 'block', background: '#0f3460', color: 'white',
+      padding: '12px 15px', borderRadius: '8px', textDecoration: 'none',
+      fontSize: '15px', fontWeight: 600, marginBottom: '8px', textAlign: 'left' as const
+    }}>
+      🌐 Vezi site-ul meu
+    </a>
+  ) : null
 
   if (esteDesktop) {
     return (
@@ -81,6 +80,7 @@ export default function Dashboard() {
               </button>
             ))}
           </nav>
+          {butonSite}
           <button
             onClick={async () => { await supabase.auth.signOut(); router.replace('/') }}
             style={{ background: 'transparent', color: '#e94560', border: 'none', cursor: 'pointer', textAlign: 'left' as const, padding: '12px 15px', fontSize: '15px', width: '100%' }}
@@ -109,12 +109,20 @@ export default function Dashboard() {
         position: 'sticky' as const, top: 0, zIndex: 100
       }}>
         <h2 style={{ color: '#e94560', margin: 0, fontSize: '18px' }}>🏠 Aithron Digital</h2>
-        <button
-          onClick={() => setMenuDeschis(!menuDeschis)}
-          style={{ background: 'none', border: 'none', color: 'white', fontSize: '26px', cursor: 'pointer', padding: '0 5px' }}
-        >
-          {menuDeschis ? '✕' : '☰'}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {linkSite && (
+            <a href={linkSite} target="_blank" rel="noreferrer" style={{
+              background: '#0f3460', color: 'white', padding: '8px 12px',
+              borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 600
+            }}>
+              🌐 Site
+            </a>
+          )}
+          <button onClick={() => setMenuDeschis(!menuDeschis)}
+            style={{ background: 'none', border: 'none', color: 'white', fontSize: '26px', cursor: 'pointer', padding: '0 5px' }}>
+            {menuDeschis ? '✕' : '☰'}
+          </button>
+        </div>
       </div>
 
       {menuDeschis && (
@@ -133,6 +141,7 @@ export default function Dashboard() {
             </button>
           ))}
           <div style={{ flex: 1 }} />
+          {butonSite}
           <button
             onClick={async () => { await supabase.auth.signOut(); router.replace('/') }}
             style={{ background: 'transparent', color: '#e94560', border: 'none', cursor: 'pointer', textAlign: 'left', padding: '15px 20px', fontSize: '17px' }}
