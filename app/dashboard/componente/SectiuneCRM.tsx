@@ -6,6 +6,7 @@ import { Contact, Eticheta, formGolP, formGolC, statusColor, culoriDisponibile, 
 export default function SectiuneCRM() {
   const [tabActiv, setTabActiv] = useState('vanzare')
   const [adauga, setAdauga] = useState(false)
+  const [editContact, setEditContact] = useState<Contact | null>(null)
   const [loading, setLoading] = useState(true)
   const [gestioneazaEtichete, setGestioneazaEtichete] = useState(false)
   const [etichetaNouaNume, setEtichetaNouaNume] = useState('')
@@ -47,21 +48,44 @@ export default function SectiuneCRM() {
     finally { setLoading(false) }
   }
 
-  const getLista = () => contacte
+  const deschideEditare = (contact: Contact) => {
+    if (esteProprietar) {
+      setFormP({ ...contact })
+    } else {
+      setFormC({ ...contact })
+    }
+    setEditContact(contact)
+    setAdauga(true)
+  }
 
   const salveaza = async () => {
     const form = esteProprietar ? formP : formC
     if (!form.nume) return
     try {
-      const { data, error } = await supabase
-        .from('contacte_crm')
-        .insert([{ ...form, tab: tabActiv }])
-        .select()
-      if (!error && data) {
-        setContacte([data[0], ...contacte])
-        setFormP({ ...formGolP })
-        setFormC({ ...formGolC })
-        setAdauga(false)
+      if (editContact) {
+        const { data, error } = await supabase
+          .from('contacte_crm')
+          .update({ ...form })
+          .eq('id', editContact.id)
+          .select()
+        if (!error && data) {
+          setContacte(contacte.map(c => c.id === editContact.id ? data[0] : c))
+          setEditContact(null)
+          setFormP({ ...formGolP })
+          setFormC({ ...formGolC })
+          setAdauga(false)
+        }
+      } else {
+        const { data, error } = await supabase
+          .from('contacte_crm')
+          .insert([{ ...form, tab: tabActiv }])
+          .select()
+        if (!error && data) {
+          setContacte([data[0], ...contacte])
+          setFormP({ ...formGolP })
+          setFormC({ ...formGolC })
+          setAdauga(false)
+        }
       }
     } catch (e) { console.error(e) }
   }
@@ -121,7 +145,7 @@ export default function SectiuneCRM() {
           <button onClick={() => setGestioneazaEtichete(!gestioneazaEtichete)} style={{ background: gestioneazaEtichete ? '#1a1a2e' : 'white', color: gestioneazaEtichete ? 'white' : '#333', border: '1px solid #ddd', padding: '10px 18px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 600 }}>
             🏷️ Etichete
           </button>
-          <button onClick={() => setAdauga(true)} style={{ background: '#e94560', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '8px', cursor: 'pointer', fontSize: '15px', fontWeight: 600 }}>
+          <button onClick={() => { setAdauga(true); setEditContact(null); setFormP({ ...formGolP }); setFormC({ ...formGolC }) }} style={{ background: '#e94560', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '8px', cursor: 'pointer', fontSize: '15px', fontWeight: 600 }}>
             + Adaugă contact
           </button>
         </div>
@@ -152,7 +176,7 @@ export default function SectiuneCRM() {
 
       <div style={{ display: 'flex', gap: '8px', marginBottom: '25px', flexWrap: 'wrap' }}>
         {taburi.map(t => (
-          <button key={t.id} onClick={() => { setTabActiv(t.id); setAdauga(false) }} style={{ background: tabActiv === t.id ? '#1a1a2e' : 'white', color: tabActiv === t.id ? 'white' : '#333', border: '1px solid #ddd', padding: '10px 18px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 600 }}>
+          <button key={t.id} onClick={() => { setTabActiv(t.id); setAdauga(false); setEditContact(null) }} style={{ background: tabActiv === t.id ? '#1a1a2e' : 'white', color: tabActiv === t.id ? 'white' : '#333', border: '1px solid #ddd', padding: '10px 18px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 600 }}>
             {t.label}
           </button>
         ))}
@@ -160,7 +184,7 @@ export default function SectiuneCRM() {
 
       {adauga && (
         <div style={{ background: 'white', borderRadius: '12px', padding: '25px', marginBottom: '25px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-          <h3 style={{ marginTop: 0 }}>Contact nou — {taburi.find(t => t.id === tabActiv)?.label}</h3>
+          <h3 style={{ marginTop: 0 }}>{editContact ? '✏️ Editează contact' : 'Contact nou'} — {taburi.find(t => t.id === tabActiv)?.label}</h3>
           <div style={{ display: 'grid', gridTemplateColumns: esteDesktop ? '1fr 1fr' : '1fr', gap: '15px' }}>
             {[
               { key: 'nume', label: 'Nume complet', placeholder: 'Ex: Ion Popescu', type: 'text' },
@@ -238,16 +262,18 @@ export default function SectiuneCRM() {
             </div>
           )}
           <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-            <button onClick={salveaza} style={{ background: '#e94560', color: 'white', border: 'none', padding: '10px 25px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>💾 Salvează</button>
-            <button onClick={() => setAdauga(false)} style={{ background: '#f0f0f0', color: '#333', border: 'none', padding: '10px 25px', borderRadius: '8px', cursor: 'pointer' }}>Anulează</button>
+            <button onClick={salveaza} style={{ background: '#e94560', color: 'white', border: 'none', padding: '10px 25px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
+              {editContact ? '💾 Salvează modificările' : '💾 Salvează'}
+            </button>
+            <button onClick={() => { setAdauga(false); setEditContact(null); setFormP({ ...formGolP }); setFormC({ ...formGolC }) }} style={{ background: '#f0f0f0', color: '#333', border: 'none', padding: '10px 25px', borderRadius: '8px', cursor: 'pointer' }}>Anulează</button>
           </div>
         </div>
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {loading && <div style={{ background: 'white', borderRadius: '12px', padding: '40px', textAlign: 'center', color: '#888' }}>⏳ Se încarcă contactele...</div>}
-        {!loading && getLista().length === 0 && <div style={{ background: 'white', borderRadius: '12px', padding: '40px', textAlign: 'center', color: '#888' }}>Nu ai contacte în această categorie. Adaugă primul! 👆</div>}
-        {!loading && getLista().map(contact => (
+        {!loading && contacte.length === 0 && <div style={{ background: 'white', borderRadius: '12px', padding: '40px', textAlign: 'center', color: '#888' }}>Nu ai contacte în această categorie. Adaugă primul! 👆</div>}
+        {!loading && contacte.map(contact => (
           <div key={contact.id} style={{ background: 'white', borderRadius: '12px', padding: '20px 25px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
             {esteDesktop ? (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -278,6 +304,7 @@ export default function SectiuneCRM() {
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
                   <span style={{ background: '#f0f0f0', padding: '5px 12px', borderRadius: '20px', fontSize: '13px' }}>{contact.tip_proprietate}</span>
                   <span style={{ background: (statusColor[contact.status] || '#888') + '22', color: statusColor[contact.status] || '#888', padding: '5px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: 600 }}>{contact.status}</span>
+                  <button onClick={() => deschideEditare(contact)} style={{ background: '#3b82f6', color: 'white', border: 'none', width: '38px', height: '38px', borderRadius: '8px', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✏️</button>
                   <button onClick={() => deschideWhatsapp(contact.telefon, contact.nume)} style={{ background: '#25D366', color: 'white', border: 'none', width: '38px', height: '38px', borderRadius: '8px', cursor: 'pointer', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>💬</button>
                   <button onClick={() => sterge(contact.id)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '18px', color: '#ccc' }}>🗑️</button>
                 </div>
@@ -311,6 +338,7 @@ export default function SectiuneCRM() {
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                   <span style={{ background: '#f0f0f0', padding: '5px 12px', borderRadius: '20px', fontSize: '13px' }}>{contact.tip_proprietate}</span>
                   <span style={{ background: (statusColor[contact.status] || '#888') + '22', color: statusColor[contact.status] || '#888', padding: '5px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: 600 }}>{contact.status}</span>
+                  <button onClick={() => deschideEditare(contact)} style={{ background: '#3b82f6', color: 'white', border: 'none', width: '38px', height: '38px', borderRadius: '8px', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✏️</button>
                   <button onClick={() => deschideWhatsapp(contact.telefon, contact.nume)} style={{ background: '#25D366', color: 'white', border: 'none', width: '38px', height: '38px', borderRadius: '8px', cursor: 'pointer', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>💬</button>
                   <button onClick={() => sterge(contact.id)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '18px', color: '#ccc' }}>🗑️</button>
                 </div>
