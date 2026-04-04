@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 export default function SectiuneDashboard({ onNavigate }: { onNavigate: (sectiune: string) => void }) {
   const [stats, setStats] = useState({ proprietati: 0, contacte: 0, blog: 0 })
   const [nume, setNume] = useState('')
+  const [wpUrl, setWpUrl] = useState('')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => { incarcaDate() }, [])
@@ -13,6 +14,7 @@ export default function SectiuneDashboard({ onNavigate }: { onNavigate: (sectiun
     try {
       const { data: setari } = await supabase.from('setari_agent').select('nume, wp_url, wp_username, wp_password').single()
       if (setari?.nume) setNume(setari.nume)
+      if (setari?.wp_url) setWpUrl(setari.wp_url)
 
       const { count: contacte } = await supabase.from('contacte_crm').select('*', { count: 'exact', head: true })
 
@@ -52,7 +54,7 @@ export default function SectiuneDashboard({ onNavigate }: { onNavigate: (sectiun
 
   return (
     <div>
-      <div style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)', borderRadius: '16px', padding: '30px 35px', marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)', borderRadius: '16px', padding: '30px 35px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 style={{ margin: '0 0 8px', color: 'white', fontSize: '24px' }}>
             {salut}{nume ? `, ${nume}` : ''}! 👋
@@ -63,6 +65,17 @@ export default function SectiuneDashboard({ onNavigate }: { onNavigate: (sectiun
         </div>
         <div style={{ fontSize: '60px' }}>🏠</div>
       </div>
+
+      {wpUrl && (
+        <a href={wpUrl} target="_blank" rel="noreferrer" style={{
+          display: 'block', background: '#e94560', color: 'white',
+          padding: '18px 30px', borderRadius: '14px', textDecoration: 'none',
+          fontSize: '17px', fontWeight: 700, textAlign: 'center' as const,
+          marginBottom: '20px', boxShadow: '0 4px 15px rgba(233,69,96,0.4)'
+        }}>
+          🌐 Vezi website-ul meu
+        </a>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '30px' }}>
         {carduri.map(card => (
