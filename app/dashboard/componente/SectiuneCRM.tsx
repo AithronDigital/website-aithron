@@ -56,6 +56,14 @@ export default function SectiuneCRM() {
     }
     setEditContact(contact)
     setAdauga(true)
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100)
+  }
+
+  const inchideFormular = () => {
+    setAdauga(false)
+    setEditContact(null)
+    setFormP({ ...formGolP })
+    setFormC({ ...formGolC })
   }
 
   const salveaza = async () => {
@@ -63,17 +71,15 @@ export default function SectiuneCRM() {
     if (!form.nume) return
     try {
       if (editContact) {
+        const { id, tab, created_at, ...updateData } = form
         const { data, error } = await supabase
           .from('contacte_crm')
-          .update({ ...form })
+          .update(updateData)
           .eq('id', editContact.id)
           .select()
         if (!error && data) {
           setContacte(contacte.map(c => c.id === editContact.id ? data[0] : c))
-          setEditContact(null)
-          setFormP({ ...formGolP })
-          setFormC({ ...formGolC })
-          setAdauga(false)
+          inchideFormular()
         }
       } else {
         const { data, error } = await supabase
@@ -82,9 +88,7 @@ export default function SectiuneCRM() {
           .select()
         if (!error && data) {
           setContacte([data[0], ...contacte])
-          setFormP({ ...formGolP })
-          setFormC({ ...formGolC })
-          setAdauga(false)
+          inchideFormular()
         }
       }
     } catch (e) { console.error(e) }
@@ -184,7 +188,11 @@ export default function SectiuneCRM() {
 
       {adauga && (
         <div style={{ background: 'white', borderRadius: '12px', padding: '25px', marginBottom: '25px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-          <h3 style={{ marginTop: 0 }}>{editContact ? '✏️ Editează contact' : 'Contact nou'} — {taburi.find(t => t.id === tabActiv)?.label}</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h3 style={{ margin: 0 }}>{editContact ? '✏️ Editează contact' : '➕ Contact nou'} — {taburi.find(t => t.id === tabActiv)?.label}</h3>
+            <button onClick={inchideFormular} style={{ background: '#f0f0f0', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 600 }}>✕ Închide</button>
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: esteDesktop ? '1fr 1fr' : '1fr', gap: '15px' }}>
             {[
               { key: 'nume', label: 'Nume complet', placeholder: 'Ex: Ion Popescu', type: 'text' },
@@ -245,11 +253,18 @@ export default function SectiuneCRM() {
                 <option>Activ</option><option>În negociere</option><option>În așteptare</option><option>Finalizat</option>
               </select>
             </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '5px', fontSize: '13px', fontWeight: 600 }}>Notă</label>
-              <input placeholder="Observații..." value={esteProprietar ? formP.nota : formC.nota} onChange={e => esteProprietar ? setFormP({ ...formP, nota: e.target.value }) : setFormC({ ...formC, nota: e.target.value })} style={inp} />
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontSize: '13px', fontWeight: 600 }}>📝 Notă</label>
+              <textarea
+                placeholder="Scrie observații, detalii întâlniri, urmări..."
+                value={esteProprietar ? formP.nota : formC.nota}
+                onChange={e => esteProprietar ? setFormP({ ...formP, nota: e.target.value }) : setFormC({ ...formC, nota: e.target.value })}
+                rows={4}
+                style={{ ...inp, resize: 'vertical' as const }}
+              />
             </div>
           </div>
+
           {etichete.length > 0 && (
             <div style={{ marginTop: '20px' }}>
               <label style={{ display: 'block', marginBottom: '10px', fontSize: '13px', fontWeight: 600 }}>🏷️ Etichete</label>
@@ -261,11 +276,14 @@ export default function SectiuneCRM() {
               </div>
             </div>
           )}
-          <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-            <button onClick={salveaza} style={{ background: '#e94560', color: 'white', border: 'none', padding: '10px 25px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
+
+          <div style={{ display: 'flex', gap: '10px', marginTop: '25px', paddingTop: '20px', borderTop: '1px solid #f0f0f0' }}>
+            <button onClick={salveaza} style={{ background: '#e94560', color: 'white', border: 'none', padding: '12px 30px', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '15px' }}>
               {editContact ? '💾 Salvează modificările' : '💾 Salvează'}
             </button>
-            <button onClick={() => { setAdauga(false); setEditContact(null); setFormP({ ...formGolP }); setFormC({ ...formGolC }) }} style={{ background: '#f0f0f0', color: '#333', border: 'none', padding: '10px 25px', borderRadius: '8px', cursor: 'pointer' }}>Anulează</button>
+            <button onClick={inchideFormular} style={{ background: '#f0f0f0', color: '#333', border: 'none', padding: '12px 25px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
+              ✕ Anulează
+            </button>
           </div>
         </div>
       )}
@@ -276,37 +294,43 @@ export default function SectiuneCRM() {
         {!loading && contacte.map(contact => (
           <div key={contact.id} style={{ background: 'white', borderRadius: '12px', padding: '20px 25px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
             {esteDesktop ? (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ display: 'flex', gap: '15px', alignItems: 'flex-start' }}>
-                  <div style={{ width: '45px', height: '45px', borderRadius: '50%', background: '#e94560', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '18px', flexShrink: 0 }}>{contact.nume.charAt(0)}</div>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: '16px' }}>{contact.nume}</div>
-                    <div style={{ color: '#666', fontSize: '13px', marginTop: '3px' }}>📞 {contact.telefon} · ✉️ {contact.email}</div>
-                    {esteProprietar && <div style={{ color: '#444', fontSize: '13px', marginTop: '6px' }}>📍 {contact.adresa} · 💰 {contact.pret} · 📐 {contact.suprafata}mp · 🚪 {contact.camere} cam · 📄 Acte: {contact.acte}</div>}
-                    {!esteProprietar && <div style={{ color: '#444', fontSize: '13px', marginTop: '6px' }}>💰 Buget: {contact.buget} · 📍 Zone: {contact.zone} · 🚪 {contact.camere_dorite} camere</div>}
-                    {contact.nota && <div style={{ color: '#888', fontSize: '13px', marginTop: '4px' }}>💬 {contact.nota}</div>}
-                    {contact.etichete && contact.etichete.length > 0 && (
-                      <div style={{ display: 'flex', gap: '6px', marginTop: '10px', flexWrap: 'wrap' }}>
-                        {contact.etichete.map((eid: number) => {
-                          const et = etichete.find(e => e.id === eid)
-                          if (!et) return null
-                          return <span key={eid} onClick={() => toggleEtichetaContact(contact.id, eid)} style={{ background: et.culoare, color: 'white', borderRadius: '20px', padding: '3px 12px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>{et.nume} ×</span>
-                        })}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', gap: '15px', alignItems: 'flex-start' }}>
+                    <div style={{ width: '45px', height: '45px', borderRadius: '50%', background: '#e94560', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '18px', flexShrink: 0 }}>{contact.nume.charAt(0)}</div>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '16px' }}>{contact.nume}</div>
+                      <div style={{ color: '#666', fontSize: '13px', marginTop: '3px' }}>📞 {contact.telefon} · ✉️ {contact.email}</div>
+                      {esteProprietar && <div style={{ color: '#444', fontSize: '13px', marginTop: '6px' }}>📍 {contact.adresa} · 💰 {contact.pret} · 📐 {contact.suprafata}mp · 🚪 {contact.camere} cam · 📄 Acte: {contact.acte}</div>}
+                      {!esteProprietar && <div style={{ color: '#444', fontSize: '13px', marginTop: '6px' }}>💰 Buget: {contact.buget} · 📍 Zone: {contact.zone} · 🚪 {contact.camere_dorite} camere</div>}
+                      {contact.nota && <div style={{ color: '#888', fontSize: '13px', marginTop: '4px', whiteSpace: 'pre-wrap' }}>💬 {contact.nota}</div>}
+                      {contact.etichete && contact.etichete.length > 0 && (
+                        <div style={{ display: 'flex', gap: '6px', marginTop: '10px', flexWrap: 'wrap' }}>
+                          {contact.etichete.map((eid: number) => {
+                            const et = etichete.find(e => e.id === eid)
+                            if (!et) return null
+                            return <span key={eid} onClick={() => toggleEtichetaContact(contact.id, eid)} style={{ background: et.culoare, color: 'white', borderRadius: '20px', padding: '3px 12px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>{et.nume} ×</span>
+                          })}
+                        </div>
+                      )}
+                      <div style={{ display: 'flex', gap: '5px', marginTop: '8px', flexWrap: 'wrap' }}>
+                        {etichete.filter(e => !contact.etichete?.includes(e.id)).map(e => (
+                          <span key={e.id} onClick={() => toggleEtichetaContact(contact.id, e.id)} style={{ background: 'transparent', color: '#aaa', border: '1px dashed #ccc', borderRadius: '20px', padding: '2px 10px', fontSize: '11px', cursor: 'pointer' }}>+ {e.nume}</span>
+                        ))}
                       </div>
-                    )}
-                    <div style={{ display: 'flex', gap: '5px', marginTop: '8px', flexWrap: 'wrap' }}>
-                      {etichete.filter(e => !contact.etichete?.includes(e.id)).map(e => (
-                        <span key={e.id} onClick={() => toggleEtichetaContact(contact.id, e.id)} style={{ background: 'transparent', color: '#aaa', border: '1px dashed #ccc', borderRadius: '20px', padding: '2px 10px', fontSize: '11px', cursor: 'pointer' }}>+ {e.nume}</span>
-                      ))}
                     </div>
                   </div>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                    <span style={{ background: '#f0f0f0', padding: '5px 12px', borderRadius: '20px', fontSize: '13px' }}>{contact.tip_proprietate}</span>
+                    <span style={{ background: (statusColor[contact.status] || '#888') + '22', color: statusColor[contact.status] || '#888', padding: '5px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: 600 }}>{contact.status}</span>
+                    <button onClick={() => deschideWhatsapp(contact.telefon, contact.nume)} style={{ background: '#25D366', color: 'white', border: 'none', width: '38px', height: '38px', borderRadius: '8px', cursor: 'pointer', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>💬</button>
+                    <button onClick={() => sterge(contact.id)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '18px', color: '#ccc' }}>🗑️</button>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
-                  <span style={{ background: '#f0f0f0', padding: '5px 12px', borderRadius: '20px', fontSize: '13px' }}>{contact.tip_proprietate}</span>
-                  <span style={{ background: (statusColor[contact.status] || '#888') + '22', color: statusColor[contact.status] || '#888', padding: '5px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: 600 }}>{contact.status}</span>
-                  <button onClick={() => deschideEditare(contact)} style={{ background: '#3b82f6', color: 'white', border: 'none', width: '38px', height: '38px', borderRadius: '8px', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✏️</button>
-                  <button onClick={() => deschideWhatsapp(contact.telefon, contact.nume)} style={{ background: '#25D366', color: 'white', border: 'none', width: '38px', height: '38px', borderRadius: '8px', cursor: 'pointer', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>💬</button>
-                  <button onClick={() => sterge(contact.id)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '18px', color: '#ccc' }}>🗑️</button>
+                <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #f5f5f5' }}>
+                  <button onClick={() => deschideEditare(contact)} style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '8px 20px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 600 }}>
+                    ✏️ Editează contact
+                  </button>
                 </div>
               </div>
             ) : (
@@ -318,7 +342,7 @@ export default function SectiuneCRM() {
                     <div style={{ color: '#666', fontSize: '13px', marginTop: '3px' }}>📞 {contact.telefon} · ✉️ {contact.email}</div>
                     {esteProprietar && <div style={{ color: '#444', fontSize: '13px', marginTop: '6px' }}>📍 {contact.adresa} · 💰 {contact.pret} · 📐 {contact.suprafata}mp · 🚪 {contact.camere} cam · 📄 Acte: {contact.acte}</div>}
                     {!esteProprietar && <div style={{ color: '#444', fontSize: '13px', marginTop: '6px' }}>💰 Buget: {contact.buget} · 📍 Zone: {contact.zone} · 🚪 {contact.camere_dorite} camere</div>}
-                    {contact.nota && <div style={{ color: '#888', fontSize: '13px', marginTop: '4px' }}>💬 {contact.nota}</div>}
+                    {contact.nota && <div style={{ color: '#888', fontSize: '13px', marginTop: '4px', whiteSpace: 'pre-wrap' }}>💬 {contact.nota}</div>}
                     {contact.etichete && contact.etichete.length > 0 && (
                       <div style={{ display: 'flex', gap: '6px', marginTop: '10px', flexWrap: 'wrap' }}>
                         {contact.etichete.map((eid: number) => {
@@ -338,9 +362,13 @@ export default function SectiuneCRM() {
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                   <span style={{ background: '#f0f0f0', padding: '5px 12px', borderRadius: '20px', fontSize: '13px' }}>{contact.tip_proprietate}</span>
                   <span style={{ background: (statusColor[contact.status] || '#888') + '22', color: statusColor[contact.status] || '#888', padding: '5px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: 600 }}>{contact.status}</span>
-                  <button onClick={() => deschideEditare(contact)} style={{ background: '#3b82f6', color: 'white', border: 'none', width: '38px', height: '38px', borderRadius: '8px', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✏️</button>
                   <button onClick={() => deschideWhatsapp(contact.telefon, contact.nume)} style={{ background: '#25D366', color: 'white', border: 'none', width: '38px', height: '38px', borderRadius: '8px', cursor: 'pointer', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>💬</button>
                   <button onClick={() => sterge(contact.id)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '18px', color: '#ccc' }}>🗑️</button>
+                </div>
+                <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #f5f5f5' }}>
+                  <button onClick={() => deschideEditare(contact)} style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '8px 20px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 600, width: '100%' }}>
+                    ✏️ Editează contact
+                  </button>
                 </div>
               </div>
             )}
