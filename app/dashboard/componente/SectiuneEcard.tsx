@@ -90,12 +90,17 @@ export default function SectiuneEcard() {
       let pozaFundalUrl = form.poza_fundal_url
       if (pozaProfilFile) pozaProfilUrl = await uploadPoza(pozaProfilFile, 'poza profil')
       if (pozaFundalFile) pozaFundalUrl = await uploadPoza(pozaFundalFile, 'imagine fundal')
-      const dataToSave = { ...form, poza_profil_url: pozaProfilUrl, poza_fundal_url: pozaFundalUrl }
+
+      const dataToSave: any = { ...form, poza_profil_url: pozaProfilUrl, poza_fundal_url: pozaFundalUrl }
+      delete dataToSave.id
+      delete dataToSave.created_at
 
       if (ecardId) {
-        await supabase.from('ecard').update(dataToSave).eq('id', ecardId)
+        const { error } = await supabase.from('ecard').update(dataToSave).eq('id', ecardId)
+        if (error) { setErrorMsg('Eroare salvare: ' + error.message); setSalvare('error'); return }
       } else {
-        const { data } = await supabase.from('ecard').insert([dataToSave]).select().single()
+        const { data, error } = await supabase.from('ecard').insert([dataToSave]).select().single()
+        if (error) { setErrorMsg('Eroare salvare: ' + error.message); setSalvare('error'); return }
         if (data) setEcardId(data.id)
       }
 
@@ -103,7 +108,7 @@ export default function SectiuneEcard() {
         await supabase.from('setari_agent').update({ poza_profil_url: pozaProfilUrl }).not('id', 'is', null)
       }
 
-      setForm(dataToSave)
+      setForm({ ...dataToSave })
       if (pozaProfilUrl) setPozaProfilPreview(pozaProfilUrl)
       if (pozaFundalUrl) setPozaFundalPreview(pozaFundalUrl)
       setPozaProfilFile(null)
@@ -162,33 +167,27 @@ export default function SectiuneEcard() {
 
   return (
     <div>
-      {/* HEADER */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', flexWrap: 'wrap', gap: '15px' }}>
         <div>
           <h1 style={{ margin: 0 }}>👤 eCard</h1>
           <p style={{ color: '#666', margin: '5px 0 0' }}>Cartea ta de vizită digitală.</p>
         </div>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          <button onClick={copiazaLink}
-            style={{ background: copiat ? '#22c55e' : c, color: 'white', border: 'none', padding: '10px 18px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>
+          <button onClick={copiazaLink} style={{ background: copiat ? '#22c55e' : c, color: 'white', border: 'none', padding: '10px 18px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>
             {copiat ? '✅ Copiat!' : '🔗 Copiază eCard'}
           </button>
-          <button onClick={() => setPreview(!preview)}
-            style={{ background: preview ? cInchis : 'white', color: preview ? 'white' : '#333', border: '1px solid #ddd', padding: '10px 18px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>
+          <button onClick={() => setPreview(!preview)} style={{ background: preview ? cInchis : 'white', color: preview ? 'white' : '#333', border: '1px solid #ddd', padding: '10px 18px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>
             {preview ? '✏️ Editează' : '👁️ Preview eCard'}
           </button>
-          <button onClick={() => setAratQR(!aratQR)}
-            style={{ background: aratQR ? c : 'white', color: aratQR ? 'white' : '#333', border: '1px solid #ddd', padding: '10px 18px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>
+          <button onClick={() => setAratQR(!aratQR)} style={{ background: aratQR ? c : 'white', color: aratQR ? 'white' : '#333', border: '1px solid #ddd', padding: '10px 18px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>
             📱 QR Code
           </button>
-          <button onClick={copiazaQR}
-            style={{ background: copiatQR ? '#22c55e' : cInchis, color: 'white', border: 'none', padding: '10px 18px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>
+          <button onClick={copiazaQR} style={{ background: copiatQR ? '#22c55e' : cInchis, color: 'white', border: 'none', padding: '10px 18px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}>
             {copiatQR ? '✅ QR Copiat!' : '📋 Copiază QR'}
           </button>
         </div>
       </div>
 
-      {/* QR CODE PANEL */}
       {aratQR && (
         <div style={{ background: 'white', borderRadius: '14px', padding: '30px', boxShadow: '0 2px 12px rgba(0,0,0,0.08)', marginBottom: '25px', display: 'flex', gap: '30px', alignItems: 'center', flexWrap: 'wrap' }}>
           <div style={{ textAlign: 'center' }}>
@@ -196,19 +195,11 @@ export default function SectiuneEcard() {
           </div>
           <div>
             <h3 style={{ margin: '0 0 10px', color: cInchis }}>📱 QR Code eCard</h3>
-            <p style={{ color: '#666', fontSize: '14px', margin: '0 0 5px' }}>
-              Link: <strong>{linkEcard}</strong>
-            </p>
-            <p style={{ color: '#888', fontSize: '13px', margin: '0 0 20px' }}>
-              Clientul scanează codul și deschide direct eCard-ul tău.
-            </p>
+            <p style={{ color: '#666', fontSize: '14px', margin: '0 0 5px' }}>Link: <strong>{linkEcard}</strong></p>
+            <p style={{ color: '#888', fontSize: '13px', margin: '0 0 20px' }}>Clientul scanează codul și deschide direct eCard-ul tău.</p>
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <button onClick={descarcaQR}
-                style={{ background: c, color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
-                ⬇️ Descarcă QR
-              </button>
-              <button onClick={copiazaQR}
-                style={{ background: copiatQR ? '#22c55e' : cInchis, color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
+              <button onClick={descarcaQR} style={{ background: c, color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>⬇️ Descarcă QR</button>
+              <button onClick={copiazaQR} style={{ background: copiatQR ? '#22c55e' : cInchis, color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
                 {copiatQR ? '✅ Copiat!' : '📋 Copiază QR'}
               </button>
             </div>
@@ -232,42 +223,19 @@ export default function SectiuneEcard() {
         </div>
       )}
 
-      {/* PREVIEW */}
       {preview && (
-        <div style={{
-          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
-          borderRadius: '16px', padding: '40px 20px', marginBottom: '30px',
-          display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '600px'
-        }}>
+        <div style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)', borderRadius: '16px', padding: '40px 20px', marginBottom: '30px', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '600px' }}>
           <div style={{ width: '100%', maxWidth: '400px', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
-            {/* HERO FUNDAL */}
-            <div style={{
-              height: '200px',
-              background: pozaFundalPreview ? `url(${pozaFundalPreview}) center/cover` : `linear-gradient(135deg, ${c}, ${cInchis})`,
-              position: 'relative',
-            }}>
-              {/* POZA PROFIL 150px */}
-              <div style={{
-                width: '150px', height: '150px', borderRadius: '50%',
-                border: '4px solid white',
-                boxShadow: '0 8px 30px rgba(0,0,0,0.35)',
-                position: 'absolute', bottom: '-75px', left: '50%', transform: 'translateX(-50%)',
-                background: pozaProfilPreview ? `url(${pozaProfilPreview}) center/cover` : c,
-                backgroundSize: 'cover',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '50px', overflow: 'hidden'
-              }}>
+            <div style={{ height: '200px', background: pozaFundalPreview ? `url(${pozaFundalPreview}) center/cover` : `linear-gradient(135deg, ${c}, ${cInchis})`, position: 'relative' }}>
+              <div style={{ width: '150px', height: '150px', borderRadius: '50%', border: '4px solid white', boxShadow: '0 8px 30px rgba(0,0,0,0.35)', position: 'absolute', bottom: '-75px', left: '50%', transform: 'translateX(-50%)', background: pozaProfilPreview ? `url(${pozaProfilPreview}) center/cover` : c, backgroundSize: 'cover', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '50px', overflow: 'hidden' }}>
                 {!pozaProfilPreview && '👤'}
               </div>
             </div>
-
-            {/* CONTINUT ALB */}
             <div style={{ background: 'white', paddingTop: '85px', paddingBottom: '0px', paddingLeft: '20px', paddingRight: '20px', textAlign: 'center' }}>
               <h2 style={{ margin: '0 0 4px', fontSize: '22px', color: cInchis }}>{form.nume || 'Numele Agentului'}</h2>
               <p style={{ margin: '0 0 4px', color: c, fontWeight: 600 }}>{form.titlu || 'Agent Imobiliar'}</p>
               {form.agentie && <p style={{ margin: '0 0 15px', color: '#888', fontSize: '14px' }}>{form.agentie}</p>}
               {form.despre && <p style={{ margin: '0 0 20px', color: '#666', fontSize: '14px', lineHeight: 1.6 }}>{form.despre}</p>}
-
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '15px' }}>
                 {form.whatsapp && <a href={`https://wa.me/${form.whatsapp}`} target="_blank" rel="noreferrer" style={btnStyle('#25D366')}>💬 WhatsApp</a>}
                 {form.telefon && <a href={`tel:${form.telefon}`} style={btnStyle(c)}>📞 {form.telefon}</a>}
@@ -280,18 +248,8 @@ export default function SectiuneEcard() {
                 {form.link_despre_noi && <a href={form.link_despre_noi} target="_blank" rel="noreferrer" style={btnStyle(c)}>👤 Despre noi</a>}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '15px' }}>
-                {form.whatsapp_ghid_vanzator && (
-                  <a href={`https://wa.me/${form.whatsapp_ghid_vanzator}?text=${encodeURIComponent('Bună ziua! Doresc Ghidul Vânzătorului Gratuit.')}`}
-                    target="_blank" rel="noreferrer" style={btnStyle(cInchis)}>
-                    🏠 Solicită Ghidul Vânzătorului Gratuit
-                  </a>
-                )}
-                {form.whatsapp_ghid_cumparator && (
-                  <a href={`https://wa.me/${form.whatsapp_ghid_cumparator}?text=${encodeURIComponent('Bună ziua! Doresc Ghidul Cumpărătorului Gratuit.')}`}
-                    target="_blank" rel="noreferrer" style={btnStyle(cInchis)}>
-                    🔑 Solicită Ghidul Cumpărătorului Gratuit
-                  </a>
-                )}
+                {form.whatsapp_ghid_vanzator && <a href={`https://wa.me/${form.whatsapp_ghid_vanzator}?text=${encodeURIComponent('Bună ziua! Doresc Ghidul Vânzătorului Gratuit.')}`} target="_blank" rel="noreferrer" style={btnStyle(cInchis)}>🏠 Solicită Ghidul Vânzătorului Gratuit</a>}
+                {form.whatsapp_ghid_cumparator && <a href={`https://wa.me/${form.whatsapp_ghid_cumparator}?text=${encodeURIComponent('Bună ziua! Doresc Ghidul Cumpărătorului Gratuit.')}`} target="_blank" rel="noreferrer" style={btnStyle(cInchis)}>🔑 Solicită Ghidul Cumpărătorului Gratuit</a>}
               </div>
               {(form.facebook || form.instagram || form.linkedin || form.youtube || form.tiktok) && (
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '20px' }}>
@@ -302,17 +260,8 @@ export default function SectiuneEcard() {
                   {form.tiktok && <a href={form.tiktok} target="_blank" rel="noreferrer" style={{ fontSize: '28px', textDecoration: 'none' }}>🎵</a>}
                 </div>
               )}
-
-              {/* QR - footer dark fara branding */}
-              <div style={{
-                background: cInchis,
-                margin: '0 -20px',
-                padding: '20px',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px'
-              }}>
-                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', margin: 0, letterSpacing: '2px', textTransform: 'uppercase' }}>
-                  Scanează pentru eCard
-                </p>
+              <div style={{ background: cInchis, margin: '0 -20px', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', margin: 0, letterSpacing: '2px', textTransform: 'uppercase' }}>Scanează pentru eCard</p>
                 <div style={{ background: 'white', padding: '8px', borderRadius: '10px', display: 'inline-block' }}>
                   <img src={qrUrl} alt="QR" style={{ width: '90px', height: '90px', display: 'block' }} />
                 </div>
@@ -322,7 +271,6 @@ export default function SectiuneEcard() {
         </div>
       )}
 
-      {/* FORMULAR */}
       {!preview && (
         <div style={{ display: 'grid', gridTemplateColumns: esteDesktop ? '1fr 1fr' : '1fr', gap: '25px' }}>
           <div>
@@ -330,14 +278,9 @@ export default function SectiuneEcard() {
               <h3 style={{ margin: '0 0 20px', color: cInchis }}>📸 Fotografii</h3>
               <div style={{ marginBottom: '20px' }}>
                 <label style={lbl}>Imagine fundal (hero)</label>
-                {pozaFundalPreview && (
-                  <img src={pozaFundalPreview} alt="Fundal" style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
-                )}
+                {pozaFundalPreview && <img src={pozaFundalPreview} alt="Fundal" style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />}
                 <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', border: '2px dashed #ddd', borderRadius: '10px', padding: '15px', cursor: 'pointer', color: '#888', fontSize: '14px', fontWeight: 600, background: '#fafafa' }}>
-                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => {
-                    const f = e.target.files?.[0]
-                    if (f) { setPozaFundalFile(f); setPozaFundalPreview(URL.createObjectURL(f)) }
-                  }} />
+                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) { setPozaFundalFile(f); setPozaFundalPreview(URL.createObjectURL(f)) } }} />
                   🖼️ {pozaFundalFile ? 'Schimbă fundalul' : 'Alege imagine fundal'}
                 </label>
               </div>
@@ -349,26 +292,18 @@ export default function SectiuneEcard() {
                   </div>
                 )}
                 <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', border: '2px dashed #ddd', borderRadius: '10px', padding: '15px', cursor: 'pointer', color: '#888', fontSize: '14px', fontWeight: 600, background: '#fafafa' }}>
-                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => {
-                    const f = e.target.files?.[0]
-                    if (f) { setPozaProfilFile(f); setPozaProfilPreview(URL.createObjectURL(f)) }
-                  }} />
+                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) { setPozaProfilFile(f); setPozaProfilPreview(URL.createObjectURL(f)) } }} />
                   👤 {pozaProfilFile ? 'Schimbă poza' : 'Alege poza de profil'}
                 </label>
               </div>
               <div>
                 <label style={lbl}>🎨 Culoare butoane</label>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <input type="color" value={form.culoare_principala || '#3b82f6'}
-                    onChange={e => setForm({ ...form, culoare_principala: e.target.value })}
-                    style={{ width: '50px', height: '40px', border: 'none', borderRadius: '8px', cursor: 'pointer' }} />
-                  <input value={form.culoare_principala || '#3b82f6'}
-                    onChange={e => setForm({ ...form, culoare_principala: e.target.value })}
-                    style={{ ...inp, width: '120px' }} placeholder="#3b82f6" />
+                  <input type="color" value={form.culoare_principala || '#3b82f6'} onChange={e => setForm({ ...form, culoare_principala: e.target.value })} style={{ width: '50px', height: '40px', border: 'none', borderRadius: '8px', cursor: 'pointer' }} />
+                  <input value={form.culoare_principala || '#3b82f6'} onChange={e => setForm({ ...form, culoare_principala: e.target.value })} style={{ ...inp, width: '120px' }} placeholder="#3b82f6" />
                   <div style={{ display: 'flex', gap: '6px' }}>
                     {['#3b82f6', '#e94560', '#22c55e', '#8b5cf6', '#f59e0b', '#1a1a2e'].map(col => (
-                      <div key={col} onClick={() => setForm({ ...form, culoare_principala: col })}
-                        style={{ width: '28px', height: '28px', borderRadius: '50%', background: col, cursor: 'pointer', border: form.culoare_principala === col ? '3px solid #333' : '2px solid transparent', boxSizing: 'border-box' as const }} />
+                      <div key={col} onClick={() => setForm({ ...form, culoare_principala: col })} style={{ width: '28px', height: '28px', borderRadius: '50%', background: col, cursor: 'pointer', border: form.culoare_principala === col ? '3px solid #333' : '2px solid transparent', boxSizing: 'border-box' as const }} />
                     ))}
                   </div>
                 </div>
@@ -386,15 +321,12 @@ export default function SectiuneEcard() {
               ].map(f => (
                 <div key={f.key} style={{ marginBottom: '15px' }}>
                   <label style={lbl}>{f.label}</label>
-                  <input value={(form as any)[f.key] ?? ''} onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                    placeholder={f.placeholder} style={inp} />
+                  <input value={(form as any)[f.key] ?? ''} onChange={e => setForm({ ...form, [f.key]: e.target.value })} placeholder={f.placeholder} style={inp} />
                 </div>
               ))}
               <div>
                 <label style={lbl}>Despre mine (Bio)</label>
-                <textarea value={form.despre ?? ''} onChange={e => setForm({ ...form, despre: e.target.value })}
-                  placeholder="Scrie câteva cuvinte despre tine..." rows={3}
-                  style={{ ...inp, resize: 'vertical' as const }} />
+                <textarea value={form.despre ?? ''} onChange={e => setForm({ ...form, despre: e.target.value })} placeholder="Scrie câteva cuvinte despre tine..." rows={3} style={{ ...inp, resize: 'vertical' as const }} />
               </div>
             </div>
           </div>
@@ -410,8 +342,7 @@ export default function SectiuneEcard() {
               ].map(f => (
                 <div key={f.key} style={{ marginBottom: '15px' }}>
                   <label style={lbl}>{f.label}</label>
-                  <input value={(form as any)[f.key] ?? ''} onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                    placeholder={f.placeholder} style={inp} />
+                  <input value={(form as any)[f.key] ?? ''} onChange={e => setForm({ ...form, [f.key]: e.target.value })} placeholder={f.placeholder} style={inp} />
                 </div>
               ))}
             </div>
@@ -425,8 +356,7 @@ export default function SectiuneEcard() {
               ].map(f => (
                 <div key={f.key} style={{ marginBottom: '15px' }}>
                   <label style={lbl}>{f.label}</label>
-                  <input value={(form as any)[f.key] ?? ''} onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                    placeholder={f.placeholder} style={inp} />
+                  <input value={(form as any)[f.key] ?? ''} onChange={e => setForm({ ...form, [f.key]: e.target.value })} placeholder={f.placeholder} style={inp} />
                 </div>
               ))}
             </div>
@@ -443,8 +373,7 @@ export default function SectiuneEcard() {
               ].map(f => (
                 <div key={f.key} style={{ marginBottom: '15px' }}>
                   <label style={lbl}>{f.label}</label>
-                  <input value={(form as any)[f.key] ?? ''} onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                    placeholder={f.placeholder} style={inp} />
+                  <input value={(form as any)[f.key] ?? ''} onChange={e => setForm({ ...form, [f.key]: e.target.value })} placeholder={f.placeholder} style={inp} />
                 </div>
               ))}
             </div>
@@ -454,12 +383,10 @@ export default function SectiuneEcard() {
 
       {!preview && (
         <div style={{ marginTop: '25px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <button onClick={salveaza} disabled={salvare === 'loading'}
-            style={{ background: salvare === 'loading' ? '#ccc' : '#e94560', color: 'white', border: 'none', padding: '14px 32px', borderRadius: '8px', cursor: salvare === 'loading' ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '15px' }}>
+          <button onClick={salveaza} disabled={salvare === 'loading'} style={{ background: salvare === 'loading' ? '#ccc' : '#e94560', color: 'white', border: 'none', padding: '14px 32px', borderRadius: '8px', cursor: salvare === 'loading' ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '15px' }}>
             {salvare === 'loading' ? '⏳ Se salvează...' : '💾 Salvează eCard'}
           </button>
-          <button onClick={() => setPreview(true)}
-            style={{ background: 'white', color: '#333', border: '2px solid #ddd', padding: '14px 28px', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '15px' }}>
+          <button onClick={() => setPreview(true)} style={{ background: 'white', color: '#333', border: '2px solid #ddd', padding: '14px 28px', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '15px' }}>
             👁️ Preview eCard
           </button>
         </div>
