@@ -91,12 +91,19 @@ export default function SectiuneEcard() {
       if (pozaProfilFile) pozaProfilUrl = await uploadPoza(pozaProfilFile, 'poza profil')
       if (pozaFundalFile) pozaFundalUrl = await uploadPoza(pozaFundalFile, 'imagine fundal')
       const dataToSave = { ...form, poza_profil_url: pozaProfilUrl, poza_fundal_url: pozaFundalUrl }
+
       if (ecardId) {
         await supabase.from('ecard').update(dataToSave).eq('id', ecardId)
       } else {
         const { data } = await supabase.from('ecard').insert([dataToSave]).select().single()
         if (data) setEcardId(data.id)
       }
+
+      // Sync poza profil si in setari_agent ca sa apara peste tot
+      if (pozaProfilUrl) {
+        await supabase.from('setari_agent').update({ poza_profil_url: pozaProfilUrl }).not('id', 'is', null)
+      }
+
       setForm(dataToSave)
       if (pozaProfilUrl) setPozaProfilPreview(pozaProfilUrl)
       if (pozaFundalUrl) setPozaFundalPreview(pozaFundalUrl)
@@ -234,28 +241,34 @@ export default function SectiuneEcard() {
           display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '600px'
         }}>
           <div style={{ width: '100%', maxWidth: '400px', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
+            {/* HERO FUNDAL */}
             <div style={{
               height: '200px',
               background: pozaFundalPreview ? `url(${pozaFundalPreview}) center/cover` : `linear-gradient(135deg, ${c}, ${cInchis})`,
               position: 'relative',
             }}>
+              {/* POZA PROFIL - marita la 130px */}
               <div style={{
-                width: '100px', height: '100px', borderRadius: '50%',
+                width: '130px', height: '130px', borderRadius: '50%',
                 border: '4px solid white',
-                position: 'absolute', bottom: '-50px', left: '50%', transform: 'translateX(-50%)',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                position: 'absolute', bottom: '-65px', left: '50%', transform: 'translateX(-50%)',
                 background: pozaProfilPreview ? `url(${pozaProfilPreview}) center/cover` : c,
                 backgroundSize: 'cover',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '36px', overflow: 'hidden'
+                fontSize: '44px', overflow: 'hidden'
               }}>
                 {!pozaProfilPreview && '👤'}
               </div>
             </div>
-            <div style={{ background: 'white', paddingTop: '60px', paddingBottom: '25px', paddingLeft: '20px', paddingRight: '20px', textAlign: 'center' }}>
+
+            {/* CONTINUT ALB */}
+            <div style={{ background: 'white', paddingTop: '75px', paddingBottom: '0px', paddingLeft: '20px', paddingRight: '20px', textAlign: 'center' }}>
               <h2 style={{ margin: '0 0 4px', fontSize: '22px', color: cInchis }}>{form.nume || 'Numele Agentului'}</h2>
               <p style={{ margin: '0 0 4px', color: c, fontWeight: 600 }}>{form.titlu || 'Agent Imobiliar'}</p>
               {form.agentie && <p style={{ margin: '0 0 15px', color: '#888', fontSize: '14px' }}>{form.agentie}</p>}
               {form.despre && <p style={{ margin: '0 0 20px', color: '#666', fontSize: '14px', lineHeight: 1.6 }}>{form.despre}</p>}
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '15px' }}>
                 {form.whatsapp && <a href={`https://wa.me/${form.whatsapp}`} target="_blank" rel="noreferrer" style={btnStyle('#25D366')}>💬 WhatsApp</a>}
                 {form.telefon && <a href={`tel:${form.telefon}`} style={btnStyle(c)}>📞 {form.telefon}</a>}
@@ -282,7 +295,7 @@ export default function SectiuneEcard() {
                 )}
               </div>
               {(form.facebook || form.instagram || form.linkedin || form.youtube || form.tiktok) && (
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '15px' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '20px' }}>
                   {form.facebook && <a href={form.facebook} target="_blank" rel="noreferrer" style={{ fontSize: '28px', textDecoration: 'none' }}>📘</a>}
                   {form.instagram && <a href={form.instagram} target="_blank" rel="noreferrer" style={{ fontSize: '28px', textDecoration: 'none' }}>📷</a>}
                   {form.linkedin && <a href={form.linkedin} target="_blank" rel="noreferrer" style={{ fontSize: '28px', textDecoration: 'none' }}>💼</a>}
@@ -290,9 +303,23 @@ export default function SectiuneEcard() {
                   {form.tiktok && <a href={form.tiktok} target="_blank" rel="noreferrer" style={{ fontSize: '28px', textDecoration: 'none' }}>🎵</a>}
                 </div>
               )}
-              <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: '15px', marginTop: '5px' }}>
-                <p style={{ fontSize: '12px', color: '#888', margin: '0 0 8px' }}>Scanează pentru eCard</p>
-                <img src={qrUrl} alt="QR" style={{ width: '80px', height: '80px' }} />
+
+              {/* QR - footer dark, integrat in design */}
+              <div style={{
+                background: cInchis,
+                margin: '0 -20px',
+                padding: '20px',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px'
+              }}>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', margin: 0, letterSpacing: '2px', textTransform: 'uppercase' }}>
+                  Scanează pentru eCard
+                </p>
+                <div style={{ background: 'white', padding: '8px', borderRadius: '10px', display: 'inline-block' }}>
+                  <img src={qrUrl} alt="QR" style={{ width: '90px', height: '90px', display: 'block' }} />
+                </div>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', margin: 0 }}>
+                  Aithron Digital
+                </p>
               </div>
             </div>
           </div>
@@ -322,7 +349,7 @@ export default function SectiuneEcard() {
                 <label style={lbl}>Poza profil agent</label>
                 {pozaProfilPreview && (
                   <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
-                    <img src={pozaProfilPreview} alt="Profil" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '50%', border: '3px solid #e94560' }} />
+                    <img src={pozaProfilPreview} alt="Profil" style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '50%', border: '3px solid #e94560' }} />
                   </div>
                 )}
                 <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', border: '2px dashed #ddd', borderRadius: '10px', padding: '15px', cursor: 'pointer', color: '#888', fontSize: '14px', fontWeight: 600, background: '#fafafa' }}>
