@@ -99,7 +99,6 @@ export default function SectiuneEcard() {
         if (data) setEcardId(data.id)
       }
 
-      // Sync poza profil si in setari_agent ca sa apara peste tot
       if (pozaProfilUrl) {
         await supabase.from('setari_agent').update({ poza_profil_url: pozaProfilUrl }).not('id', 'is', null)
       }
@@ -247,23 +246,23 @@ export default function SectiuneEcard() {
               background: pozaFundalPreview ? `url(${pozaFundalPreview}) center/cover` : `linear-gradient(135deg, ${c}, ${cInchis})`,
               position: 'relative',
             }}>
-              {/* POZA PROFIL - marita la 130px */}
+              {/* POZA PROFIL 150px */}
               <div style={{
-                width: '130px', height: '130px', borderRadius: '50%',
+                width: '150px', height: '150px', borderRadius: '50%',
                 border: '4px solid white',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-                position: 'absolute', bottom: '-65px', left: '50%', transform: 'translateX(-50%)',
+                boxShadow: '0 8px 30px rgba(0,0,0,0.35)',
+                position: 'absolute', bottom: '-75px', left: '50%', transform: 'translateX(-50%)',
                 background: pozaProfilPreview ? `url(${pozaProfilPreview}) center/cover` : c,
                 backgroundSize: 'cover',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '44px', overflow: 'hidden'
+                fontSize: '50px', overflow: 'hidden'
               }}>
                 {!pozaProfilPreview && '👤'}
               </div>
             </div>
 
             {/* CONTINUT ALB */}
-            <div style={{ background: 'white', paddingTop: '75px', paddingBottom: '0px', paddingLeft: '20px', paddingRight: '20px', textAlign: 'center' }}>
+            <div style={{ background: 'white', paddingTop: '85px', paddingBottom: '0px', paddingLeft: '20px', paddingRight: '20px', textAlign: 'center' }}>
               <h2 style={{ margin: '0 0 4px', fontSize: '22px', color: cInchis }}>{form.nume || 'Numele Agentului'}</h2>
               <p style={{ margin: '0 0 4px', color: c, fontWeight: 600 }}>{form.titlu || 'Agent Imobiliar'}</p>
               {form.agentie && <p style={{ margin: '0 0 15px', color: '#888', fontSize: '14px' }}>{form.agentie}</p>}
@@ -304,7 +303,7 @@ export default function SectiuneEcard() {
                 </div>
               )}
 
-              {/* QR - footer dark, integrat in design */}
+              {/* QR - footer dark fara branding */}
               <div style={{
                 background: cInchis,
                 margin: '0 -20px',
@@ -317,9 +316,6 @@ export default function SectiuneEcard() {
                 <div style={{ background: 'white', padding: '8px', borderRadius: '10px', display: 'inline-block' }}>
                   <img src={qrUrl} alt="QR" style={{ width: '90px', height: '90px', display: 'block' }} />
                 </div>
-                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', margin: 0 }}>
-                  Aithron Digital
-                </p>
               </div>
             </div>
           </div>
@@ -349,7 +345,7 @@ export default function SectiuneEcard() {
                 <label style={lbl}>Poza profil agent</label>
                 {pozaProfilPreview && (
                   <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
-                    <img src={pozaProfilPreview} alt="Profil" style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '50%', border: '3px solid #e94560' }} />
+                    <img src={pozaProfilPreview} alt="Profil" style={{ width: '110px', height: '110px', objectFit: 'cover', borderRadius: '50%', border: '3px solid #e94560', boxShadow: '0 4px 15px rgba(0,0,0,0.15)' }} />
                   </div>
                 )}
                 <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', border: '2px dashed #ddd', borderRadius: '10px', padding: '15px', cursor: 'pointer', color: '#888', fontSize: '14px', fontWeight: 600, background: '#fafafa' }}>
