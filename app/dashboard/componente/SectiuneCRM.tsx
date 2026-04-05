@@ -17,7 +17,6 @@ export default function SectiuneCRM() {
   const [cautare, setCautare] = useState('')
   const [exportLoading, setExportLoading] = useState(false)
 
-
   const [etichete, setEtichete] = useState<Eticheta[]>([
     { id: 1, nume: 'Contactat', culoare: '#3b82f6' },
     { id: 2, nume: 'În negociere', culoare: '#f59e0b' },
@@ -26,21 +25,16 @@ export default function SectiuneCRM() {
     { id: 5, nume: 'Închiriat', culoare: '#8b5cf6' },
   ])
 
-
   const [formP, setFormP] = useState<any>({ ...formGolP })
   const [formC, setFormC] = useState<any>({ ...formGolC })
 
-
   const esteProprietar = tabActiv === 'vanzare' || tabActiv === 'inchiriere'
 
-
   const azi = new Date().toISOString().split('T')[0]
-
 
   const remindereDepasite = contacte.filter(c =>
     c.reminder_date && c.reminder_date <= azi
   )
-
 
   useEffect(() => {
     incarcaContacte()
@@ -49,7 +43,6 @@ export default function SectiuneCRM() {
     window.addEventListener('resize', verificaDimensiune)
     return () => window.removeEventListener('resize', verificaDimensiune)
   }, [tabActiv])
-
 
   const incarcaContacte = async () => {
     setLoading(true)
@@ -64,13 +57,11 @@ export default function SectiuneCRM() {
     finally { setLoading(false) }
   }
 
-
   const contacteFiltrate = contacte.filter(c =>
     c.nume?.toLowerCase().includes(cautare.toLowerCase()) ||
     c.telefon?.toLowerCase().includes(cautare.toLowerCase()) ||
     c.email?.toLowerCase().includes(cautare.toLowerCase())
   )
-
 
   const deschideEditare = (contact: Contact) => {
     if (esteProprietar) {
@@ -83,14 +74,12 @@ export default function SectiuneCRM() {
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100)
   }
 
-
   const inchideFormular = () => {
     setAdauga(false)
     setEditContact(null)
     setFormP({ ...formGolP })
     setFormC({ ...formGolC })
   }
-
 
   const salveaza = async () => {
     const form = esteProprietar ? formP : formC
@@ -120,7 +109,6 @@ export default function SectiuneCRM() {
     } catch (e) { console.error(e) }
   }
 
-
   const sterge = async (id: number) => {
     if (!confirm('Sigur vrei să ștergi acest contact?')) return
     try {
@@ -128,7 +116,6 @@ export default function SectiuneCRM() {
       setContacte(contacte.filter(c => c.id !== id))
     } catch (e) { console.error(e) }
   }
-
 
   const toggleEtichetaContact = async (contactId: number, etichetaId: number) => {
     const contact = contacte.find(c => c.id === contactId)
@@ -141,7 +128,6 @@ export default function SectiuneCRM() {
     setContacte(contacte.map(c => c.id === contactId ? { ...c, etichete: nouaLista } : c))
   }
 
-
   const toggleEtichetaForm = (etichetaId: number) => {
     if (esteProprietar) {
       const are = formP.etichete.includes(etichetaId)
@@ -152,13 +138,11 @@ export default function SectiuneCRM() {
     }
   }
 
-
   const adaugaEticheta = () => {
     if (!etichetaNouaNume.trim()) return
     setEtichete([...etichete, { id: Date.now(), nume: etichetaNouaNume.trim(), culoare: etichetaNouaCuloare }])
     setEtichetaNouaNume('')
   }
-
 
   const deschideWhatsapp = (telefon: string, nume: string) => {
     const numarCurat = telefon.replace(/\s/g, '')
@@ -166,7 +150,6 @@ export default function SectiuneCRM() {
     const mesaj = encodeURIComponent(`Bună ziua, ${nume}! Vă contactez în legătură cu proprietatea discutată.`)
     window.open(`https://wa.me/${numarRo}?text=${mesaj}`, '_blank')
   }
-
 
   const exportPDF = async () => {
     setExportLoading(true)
@@ -177,13 +160,10 @@ export default function SectiuneCRM() {
         .eq('tab', tabActiv)
         .order('created_at', { ascending: false })
 
-
       if (!toateContactele) return
-
 
       const tabLabel = taburi.find(t => t.id === tabActiv)?.label || tabActiv
       const dataAzi = new Date().toLocaleDateString('ro-RO')
-
 
       let html = `
         <html><head><meta charset="utf-8">
@@ -202,7 +182,6 @@ export default function SectiuneCRM() {
         <h1>👥 ${tabLabel}</h1>
         <div class="subtitle">Export din Aithron Digital · ${dataAzi} · ${toateContactele.length} contacte</div>
       `
-
 
       toateContactele.forEach(c => {
         const dataAdaugat = c.created_at ? new Date(c.created_at).toLocaleDateString('ro-RO') : '-'
@@ -225,9 +204,7 @@ export default function SectiuneCRM() {
         `
       })
 
-
       html += '</body></html>'
-
 
       const win = window.open('', '_blank')
       if (win) {
@@ -239,15 +216,12 @@ export default function SectiuneCRM() {
     finally { setExportLoading(false) }
   }
 
-
   const formatData = (dateStr: string) => {
     if (!dateStr) return ''
     return new Date(dateStr).toLocaleDateString('ro-RO', { day: '2-digit', month: '2-digit', year: 'numeric' })
   }
 
-
   const inp = { width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' as const }
-
 
   return (
     <div>
@@ -261,7 +235,7 @@ export default function SectiuneCRM() {
           <button onClick={() => setGestioneazaEtichete(!gestioneazaEtichete)} style={{ background: gestioneazaEtichete ? '#1a1a2e' : 'white', color: gestioneazaEtichete ? 'white' : '#333', border: '1px solid #ddd', padding: '10px 18px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 600 }}>
             🏷️ Etichete
           </button>
-          <button onClick={exportPDF} disabled={exportLoading} style={{ background: '#8b5cf6', color: 'white', border: 'none', padding: '10px 18px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 600 }}>
+          <button onClick={exportPDF} disabled={exportLoading} style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '10px 18px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 600 }}>
             {exportLoading ? '⏳...' : '📄 Export PDF'}
           </button>
           <button onClick={() => { setAdauga(true); setEditContact(null); setFormP({ ...formGolP }); setFormC({ ...formGolC }) }} style={{ background: '#e94560', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '8px', cursor: 'pointer', fontSize: '15px', fontWeight: 600 }}>
@@ -269,7 +243,6 @@ export default function SectiuneCRM() {
           </button>
         </div>
       </div>
-
 
       {/* BANNER REMINDERE DEPĂȘITE */}
       {remindereDepasite.length > 0 && (
@@ -285,7 +258,6 @@ export default function SectiuneCRM() {
           </div>
         </div>
       )}
-
 
       {/* ETICHETE */}
       {gestioneazaEtichete && (
@@ -311,7 +283,6 @@ export default function SectiuneCRM() {
         </div>
       )}
 
-
       {/* TABURI + CĂUTARE */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -332,7 +303,6 @@ export default function SectiuneCRM() {
         />
       </div>
 
-
       {/* FORMULAR ADAUGARE/EDITARE */}
       {adauga && (
         <div style={{ background: 'white', borderRadius: '12px', padding: '25px', marginBottom: '25px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
@@ -340,7 +310,6 @@ export default function SectiuneCRM() {
             <h3 style={{ margin: 0 }}>{editContact ? '✏️ Editează contact' : '➕ Contact nou'} — {taburi.find(t => t.id === tabActiv)?.label}</h3>
             <button onClick={inchideFormular} style={{ background: '#f0f0f0', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 600 }}>✕ Închide</button>
           </div>
-
 
           <div style={{ display: 'grid', gridTemplateColumns: esteDesktop ? '1fr 1fr' : '1fr', gap: '15px' }}>
             {[
@@ -423,7 +392,6 @@ export default function SectiuneCRM() {
             </div>
           </div>
 
-
           {etichete.length > 0 && (
             <div style={{ marginTop: '20px' }}>
               <label style={{ display: 'block', marginBottom: '10px', fontSize: '13px', fontWeight: 600 }}>🏷️ Etichete</label>
@@ -436,7 +404,6 @@ export default function SectiuneCRM() {
             </div>
           )}
 
-
           <div style={{ display: 'flex', gap: '10px', marginTop: '25px', paddingTop: '20px', borderTop: '1px solid #f0f0f0' }}>
             <button onClick={salveaza} style={{ background: '#e94560', color: 'white', border: 'none', padding: '12px 30px', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '15px' }}>
               {editContact ? '💾 Salvează modificările' : '💾 Salvează'}
@@ -447,7 +414,6 @@ export default function SectiuneCRM() {
           </div>
         </div>
       )}
-
 
       {/* LISTA CONTACTE */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
