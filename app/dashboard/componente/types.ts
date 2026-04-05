@@ -6,6 +6,7 @@ export type Contact = {
   tip_proprietate?: string; adresa?: string; pret?: string
   suprafata?: string; camere?: string; acte?: string
   buget?: string; zone?: string; camere_dorite?: string
+  reminder_date?: string; created_at?: string
 }
 
 export const formGolProprietate = {
@@ -35,13 +36,15 @@ export const formGolProprietate = {
 export const formGolP = {
   nume: '', telefon: '', email: '', adresa: '', pret: '',
   tip_proprietate: 'Apartament', suprafata: '', camere: '',
-  acte: 'Da', status: 'Activ', nota: '', etichete: [] as number[]
+  acte: 'Da', status: 'Activ', nota: '', etichete: [] as number[],
+  reminder_date: ''
 }
 
 export const formGolC = {
   nume: '', telefon: '', email: '', buget: '', zone: '',
   camere_dorite: '', tip_proprietate: 'Apartament',
-  status: 'Activ', nota: '', etichete: [] as number[]
+  status: 'Activ', nota: '', etichete: [] as number[],
+  reminder_date: ''
 }
 
 export const statusColor: Record<string, string> = {
