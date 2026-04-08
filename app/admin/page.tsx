@@ -25,6 +25,8 @@ export default function Admin() {
   const [formNou, setFormNou] = useState(false)
   const [agent, setAgent] = useState({ email: '', nume: '', telefon: '', plan: 'Basic', wp_url: '', data_expirare: '' })
   const [mesaj, setMesaj] = useState('')
+  const [editandId, setEditandId] = useState<number | null>(null)
+  const [editDate, setEditDate] = useState<Partial<Agent>>({})
 
   useEffect(() => {
     const verificaSesiunea = async () => {
@@ -65,6 +67,20 @@ export default function Admin() {
     incarcaAgenti()
   }
 
+  const incepeEditare = (a: Agent) => {
+    setEditandId(a.id)
+    setEditDate({ email: a.email, nume: a.nume, telefon: a.telefon, plan: a.plan, wp_url: a.wp_url, data_expirare: a.data_expirare || '' })
+  }
+
+  const salveazaEditare = async (id: number) => {
+    const { error } = await supabase.from('agenti').update(editDate).eq('id', id)
+    if (error) { setMesaj('❌ Eroare: ' + error.message); return }
+    setMesaj('✅ Agent actualizat cu succes!')
+    setEditandId(null)
+    setEditDate({})
+    incarcaAgenti()
+  }
+
   if (!verificat) return null
 
   const agentiActivi = agenti.filter(a => a.activ).length
@@ -81,7 +97,7 @@ export default function Admin() {
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
           {[
             { id: 'agenti', icon: '👥', label: 'Agenți' },
-            { id: 'monitoring', icon: '📡', label: 'Monitoring' },
+            { id: 'monitoring', icon: '📡', label: 'Monitorizare' },
             { id: 'abonamente', icon: '💰', label: 'Abonamente' },
             { id: 'statistici', icon: '📊', label: 'Statistici' },
             { id: 'setari', icon: '⚙️', label: 'Setări platformă' },
@@ -172,28 +188,71 @@ export default function Admin() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 {agenti.map(a => (
-                  <div key={a.id} style={{ background: 'white', borderRadius: '12px', padding: '20px 25px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '4px' }}>{a.nume}</div>
-                      <div style={{ color: '#666', fontSize: '14px' }}>{a.email} • {a.telefon}</div>
-                      <div style={{ color: '#888', fontSize: '13px', marginTop: '4px' }}>{a.wp_url}</div>
-                      <div style={{ marginTop: '6px' }}>
-                        <span style={{ background: a.activ ? '#dcfce7' : '#fee2e2', color: a.activ ? '#166534' : '#dc2626', padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
-                          {a.activ ? '● Activ' : '● Inactiv'}
-                        </span>
+                  <div key={a.id} style={{ background: 'white', borderRadius: '12px', padding: '20px 25px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)' }}>
+                    {editandId === a.id ? (
+                      <div>
+                        <h3 style={{ marginTop: 0 }}>✏️ Editează agent</h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                          {[
+                            { label: 'Email', key: 'email', type: 'email' },
+                            { label: 'Nume', key: 'nume', type: 'text' },
+                            { label: 'Telefon', key: 'telefon', type: 'text' },
+                            { label: 'URL WordPress', key: 'wp_url', type: 'text' },
+                            { label: 'Data expirare', key: 'data_expirare', type: 'date' },
+                          ].map(camp => (
+                            <div key={camp.key}>
+                              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 600, fontSize: '14px' }}>{camp.label}</label>
+                              <input type={camp.type} value={(editDate as any)[camp.key] || ''} onChange={e => setEditDate({ ...editDate, [camp.key]: e.target.value })}
+                                style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' as const }} />
+                            </div>
+                          ))}
+                          <div>
+                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 600, fontSize: '14px' }}>Plan</label>
+                            <select value={editDate.plan || 'Basic'} onChange={e => setEditDate({ ...editDate, plan: e.target.value })}
+                              style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '8px', fontSize: '14px' }}>
+                              <option>Basic</option>
+                              <option>Pro</option>
+                              <option>Premium</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                          <button onClick={() => salveazaEditare(a.id)} style={{ background: '#e94560', color: 'white', border: 'none', padding: '12px 25px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
+                            💾 Salvează
+                          </button>
+                          <button onClick={() => setEditandId(null)} style={{ background: '#f5f5f5', color: '#333', border: '1px solid #ddd', padding: '12px 25px', borderRadius: '8px', cursor: 'pointer' }}>
+                            Anulează
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ background: a.plan === 'Premium' ? '#f59e0b' : a.plan === 'Pro' ? '#3b82f6' : '#6b7280', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
-                        {a.plan}
-                      </span>
-                      <button onClick={() => toggleActiv(a.id, a.activ)} style={{ background: a.activ ? '#fff7ed' : '#f0fdf4', color: a.activ ? '#ea580c' : '#16a34a', border: `1px solid ${a.activ ? '#ea580c' : '#16a34a'}`, padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
-                        {a.activ ? '⏸ Dezactivează' : '▶ Activează'}
-                      </button>
-                      <button onClick={() => stergeAgent(a.id)} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}>
-                        🗑️ Șterge
-                      </button>
-                    </div>
+                    ) : (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '4px' }}>{a.nume}</div>
+                          <div style={{ color: '#666', fontSize: '14px' }}>{a.email} • {a.telefon}</div>
+                          <div style={{ color: '#888', fontSize: '13px', marginTop: '4px' }}>{a.wp_url}</div>
+                          <div style={{ marginTop: '6px' }}>
+                            <span style={{ background: a.activ ? '#dcfce7' : '#fee2e2', color: a.activ ? '#166534' : '#dc2626', padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
+                              {a.activ ? '● Activ' : '● Inactiv'}
+                            </span>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span style={{ background: a.plan === 'Premium' ? '#f59e0b' : a.plan === 'Pro' ? '#3b82f6' : '#6b7280', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
+                            {a.plan}
+                          </span>
+                          <button onClick={() => incepeEditare(a)} style={{ background: '#eff6ff', color: '#3b82f6', border: '1px solid #3b82f6', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
+                            ✏️ Editează
+                          </button>
+                          <button onClick={() => toggleActiv(a.id, a.activ)} style={{ background: a.activ ? '#fff7ed' : '#f0fdf4', color: a.activ ? '#ea580c' : '#16a34a', border: `1px solid ${a.activ ? '#ea580c' : '#16a34a'}`, padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
+                            {a.activ ? '⏸ Dezactivează' : '▶ Activează'}
+                          </button>
+                          <button onClick={() => stergeAgent(a.id)} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                            🗑️ Șterge
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -213,22 +272,57 @@ export default function Admin() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 {agenti.map(a => (
-                  <div key={a.id} style={{ background: 'white', borderRadius: '12px', padding: '20px 25px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '4px' }}>{a.nume}</div>
-                      <div style={{ color: '#666', fontSize: '14px' }}>{a.email}</div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                      <span style={{ background: a.plan === 'Premium' ? '#f59e0b' : a.plan === 'Pro' ? '#3b82f6' : '#6b7280', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
-                        {a.plan}
-                      </span>
-                      <span style={{ color: '#888', fontSize: '13px' }}>
-                        📅 Expiră: {a.data_expirare || 'Nedefinit'}
-                      </span>
-                      <span style={{ background: a.activ ? '#dcfce7' : '#fee2e2', color: a.activ ? '#166534' : '#dc2626', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
-                        {a.activ ? 'Activ' : 'Inactiv'}
-                      </span>
-                    </div>
+                  <div key={a.id} style={{ background: 'white', borderRadius: '12px', padding: '20px 25px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)' }}>
+                    {editandId === a.id ? (
+                      <div>
+                        <h3 style={{ marginTop: 0 }}>✏️ Editează abonament — {a.nume}</h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                          <div>
+                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 600, fontSize: '14px' }}>Plan</label>
+                            <select value={editDate.plan || a.plan} onChange={e => setEditDate({ ...editDate, plan: e.target.value })}
+                              style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '8px', fontSize: '14px' }}>
+                              <option>Basic</option>
+                              <option>Pro</option>
+                              <option>Premium</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 600, fontSize: '14px' }}>Data expirare</label>
+                            <input type="date" value={(editDate.data_expirare as string) || ''} onChange={e => setEditDate({ ...editDate, data_expirare: e.target.value })}
+                              style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' as const }} />
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                          <button onClick={() => salveazaEditare(a.id)} style={{ background: '#e94560', color: 'white', border: 'none', padding: '12px 25px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
+                            💾 Salvează
+                          </button>
+                          <button onClick={() => setEditandId(null)} style={{ background: '#f5f5f5', color: '#333', border: '1px solid #ddd', padding: '12px 25px', borderRadius: '8px', cursor: 'pointer' }}>
+                            Anulează
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '4px' }}>{a.nume}</div>
+                          <div style={{ color: '#666', fontSize: '14px' }}>{a.email}</div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                          <span style={{ background: a.plan === 'Premium' ? '#f59e0b' : a.plan === 'Pro' ? '#3b82f6' : '#6b7280', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
+                            {a.plan}
+                          </span>
+                          <span style={{ color: '#888', fontSize: '13px' }}>
+                            📅 Expiră: {a.data_expirare || 'Nedefinit'}
+                          </span>
+                          <span style={{ background: a.activ ? '#dcfce7' : '#fee2e2', color: a.activ ? '#166534' : '#dc2626', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
+                            {a.activ ? 'Activ' : 'Inactiv'}
+                          </span>
+                          <button onClick={() => incepeEditare(a)} style={{ background: '#eff6ff', color: '#3b82f6', border: '1px solid #3b82f6', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
+                            ✏️ Editează
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
