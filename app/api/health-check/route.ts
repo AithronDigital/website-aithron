@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export async function GET() {
   try {
@@ -16,12 +22,22 @@ export async function GET() {
     await transporter.sendMail({
       from: process.env.SMTP_USER,
       to: process.env.ALERT_EMAIL,
-      subject: '✅ Aithron Digital - Site OK',
+      subject: '✅ Aithron Digital - Verificare zilnică OK',
       text: 'Verificare automată: site-ul funcționează corect.',
+    });
+
+    await supabase.from('alerte_monitoring').insert({
+      site_url: 'website.aithrondigital.com',
+      status: 'OK',
     });
 
     return NextResponse.json({ status: 'ok' });
   } catch (error) {
+    await supabase.from('alerte_monitoring').insert({
+      site_url: 'website.aithrondigital.com',
+      status: 'EROARE',
+    });
+
     return NextResponse.json({ status: 'error', error: String(error) }, { status: 500 });
   }
 }
