@@ -14,6 +14,7 @@ type Agent = {
   activ: boolean
   wp_url: string
   created_at: string
+  data_expirare?: string
 }
 
 export default function Admin() {
@@ -80,11 +81,18 @@ export default function Admin() {
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
           {[
             { id: 'agenti', icon: '👥', label: 'Agenți' },
+            { id: 'monitoring', icon: '📡', label: 'Monitoring' },
             { id: 'abonamente', icon: '💰', label: 'Abonamente' },
             { id: 'statistici', icon: '📊', label: 'Statistici' },
             { id: 'setari', icon: '⚙️', label: 'Setări platformă' },
           ].map(item => (
-            <button key={item.id} onClick={() => setSectiune(item.id)} style={{
+            <button key={item.id} onClick={() => {
+              if (item.id === 'monitoring') {
+                router.push('/admin/monitoring')
+              } else {
+                setSectiune(item.id)
+              }
+            }} style={{
               background: sectiune === item.id ? '#e94560' : 'transparent',
               color: 'white', border: 'none', padding: '12px 15px',
               borderRadius: '8px', cursor: 'pointer', textAlign: 'left' as const, fontSize: '15px'
@@ -215,7 +223,7 @@ export default function Admin() {
                         {a.plan}
                       </span>
                       <span style={{ color: '#888', fontSize: '13px' }}>
-                        📅 Expiră: {(a as any).data_expirare || 'Nedefinit'}
+                        📅 Expiră: {a.data_expirare || 'Nedefinit'}
                       </span>
                       <span style={{ background: a.activ ? '#dcfce7' : '#fee2e2', color: a.activ ? '#166534' : '#dc2626', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
                         {a.activ ? 'Activ' : 'Inactiv'}
