@@ -19,12 +19,20 @@ type Agent = {
   last_error?: string
 }
 
+type Alerta = {
+  id: string
+  created_at: string
+  site_url: string
+  status: string
+}
+
 export default function Monitoring() {
   const router = useRouter()
   const [verificat, setVerificat] = useState(false)
   const [agenti, setAgenti] = useState<Agent[]>([])
   const [loading, setLoading] = useState(false)
   const [verificandId, setVerificandId] = useState<number | null>(null)
+  const [alerte, setAlerte] = useState<Alerta[]>([])
 
   useEffect(() => {
     const verificaSesiunea = async () => {
@@ -34,6 +42,7 @@ export default function Monitoring() {
       } else {
         setVerificat(true)
         incarcaAgenti()
+        incarcaAlerte()
       }
     }
     verificaSesiunea()
@@ -44,6 +53,15 @@ export default function Monitoring() {
     if (data) setAgenti(data)
   }
 
+  const incarcaAlerte = async () => {
+    const { data } = await supabase
+      .from('alerte_monitoring')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50)
+    if (data) setAlerte(data)
+  }
+
   const verificaSite = async (agent: Agent) => {
     if (!agent.wp_url) return
     setVerificandId(agent.id)
@@ -51,7 +69,6 @@ export default function Monitoring() {
     try {
       const url = agent.wp_url.startsWith('http') ? agent.wp_url : `https://${agent.wp_url}`
 
-      // Verificare uptime
       let status = 'offline'
       let last_error = ''
       try {
@@ -62,7 +79,6 @@ export default function Monitoring() {
         last_error = 'Site inaccessibil'
       }
 
-      // Verificare PageSpeed
       let pagespeed_score = null
       try {
         const psResp = await fetch(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&strategy=mobile`)
@@ -72,7 +88,6 @@ export default function Monitoring() {
         }
       } catch {}
 
-      // Verificare SEO basic
       let seo_score = 0
       try {
         const seoResp = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`)
@@ -86,10 +101,8 @@ export default function Monitoring() {
         }
       } catch {}
 
-      // Verificare SSL
       const ssl_status = url.startsWith('https') ? 'valid' : 'missing'
 
-      // Salvare în Supabase
       await supabase.from('agenti').update({
         status,
         last_check: new Date().toISOString(),
@@ -99,7 +112,14 @@ export default function Monitoring() {
         last_error: last_error || null
       }).eq('id', agent.id)
 
+      // Salvare alertă în istoric
+      await supabase.from('alerte_monitoring').insert({
+        site_url: url,
+        status: status === 'online' ? 'OK' : 'EROARE',
+      })
+
       incarcaAgenti()
+      incarcaAlerte()
     } catch (err) {
       console.error(err)
     } finally {
@@ -270,6 +290,48 @@ export default function Monitoring() {
             ))}
           </div>
         )}
+
+        {/* Istoric Alerte */}
+        <div style={{ marginTop: '40px' }}>
+          <h2 style={{ fontSize: '22px', color: '#1a1a2e', marginBottom: '20px' }}>📋 Istoric Alerte</h2>
+          {alerte.length === 0 ? (
+            <div style={{ background: 'white', borderRadius: '12px', padding: '30px', textAlign: 'center', color: '#888' }}>
+              Nicio alertă înregistrată încă.
+            </div>
+          ) : (
+            <div style={{ background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.06)' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#1a1a2e', color: 'white' }}>
+                    <th style={{ padding: '14px 20px', textAlign: 'left', fontSize: '14px' }}>Data și ora</th>
+                    <th style={{ padding: '14px 20px', textAlign: 'left', fontSize: '14px' }}>Site</th>
+                    <th style={{ padding: '14px 20px', textAlign: 'left', fontSize: '14px' }}>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {alerte.map((a, i) => (
+                    <tr key={a.id} style={{ backgroundColor: i % 2 === 0 ? '#f9f9f9' : 'white', borderBottom: '1px solid #eee' }}>
+                      <td style={{ padding: '12px 20px', fontSize: '14px' }}>
+                        {new Date(a.created_at).toLocaleString('ro-RO')}
+                      </td>
+                      <td style={{ padding: '12px 20px', fontSize: '14px' }}>{a.site_url}</td>
+                      <td style={{ padding: '12px 20px' }}>
+                        <span style={{
+                          backgroundColor: a.status === 'OK' ? '#22c55e' : '#ef4444',
+                          color: 'white', padding: '4px 12px',
+                          borderRadius: '999px', fontSize: '13px', fontWeight: 600
+                        }}>
+                          {a.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   )
