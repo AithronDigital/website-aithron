@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 import { meniu } from './componente/types'
 import SectiuneDashboard from './componente/SectiuneDashboard'
@@ -10,14 +10,17 @@ import SectiuneSetari from './componente/SectiuneSetari'
 import SectiuneBlog from './componente/SectiuneBlog'
 import SectiuneEditareSite from './componente/SectiuneEditareSite'
 import SectiuneEcard from './componente/SectiuneEcard'
+import { Suspense } from 'react'
 
-export default function Dashboard() {
+function DashboardContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [verificat, setVerificat] = useState(false)
-  const [sectiune, setSectiune] = useState('dashboard')
   const [menuDeschis, setMenuDeschis] = useState(false)
   const [esteDesktop, setEsteDesktop] = useState(true)
   const [linkSite, setLinkSite] = useState('')
+
+  const sectiune = searchParams.get('s') || 'dashboard'
 
   useEffect(() => {
     const verificaSesiunea = async () => {
@@ -35,24 +38,12 @@ export default function Dashboard() {
     return () => window.removeEventListener('resize', verificaDimensiune)
   }, [])
 
-  useEffect(() => {
-    if (!verificat) return
-    window.history.pushState({ sectiune }, '', window.location.pathname)
-  }, [sectiune, verificat])
-
-  useEffect(() => {
-    if (!verificat) return
-    const handlePopState = (e: PopStateEvent) => {
-      if (e.state?.sectiune) { setSectiune(e.state.sectiune) } else { setSectiune('dashboard') }
-      setMenuDeschis(false)
-    }
-    window.addEventListener('popstate', handlePopState)
-    return () => window.removeEventListener('popstate', handlePopState)
-  }, [verificat])
-
   if (!verificat) return null
 
-  const navigheaza = (id: string) => { setSectiune(id); setMenuDeschis(false) }
+  const navigheaza = (id: string) => {
+    router.push(`/dashboard?s=${id}`)
+    setMenuDeschis(false)
+  }
 
   const butonSite = linkSite ? (
     <a href={linkSite} target="_blank" rel="noreferrer" style={{
@@ -161,5 +152,13 @@ export default function Dashboard() {
         {sectiune === 'setari' && <SectiuneSetari />}
       </div>
     </div>
+  )
+}
+
+export default function Dashboard() {
+  return (
+    <Suspense fallback={null}>
+      <DashboardContent />
+    </Suspense>
   )
 }
