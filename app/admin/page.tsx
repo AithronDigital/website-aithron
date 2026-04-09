@@ -14,7 +14,9 @@ type Agent = {
   activ: boolean
   wp_url: string
   created_at: string
+  data_inceput?: string
   data_expirare?: string
+  nota_plata?: string
 }
 
 export default function Admin() {
@@ -23,7 +25,7 @@ export default function Admin() {
   const [agenti, setAgenti] = useState<Agent[]>([])
   const [sectiune, setSectiune] = useState('agenti')
   const [formNou, setFormNou] = useState(false)
-  const [agent, setAgent] = useState({ email: '', nume: '', telefon: '', plan: 'Basic', wp_url: '', data_expirare: '' })
+  const [agent, setAgent] = useState({ email: '', nume: '', telefon: '', plan: 'Basic', wp_url: '', data_inceput: '', data_expirare: '', nota_plata: '' })
   const [mesaj, setMesaj] = useState('')
   const [editandId, setEditandId] = useState<number | null>(null)
   const [editDate, setEditDate] = useState<Partial<Agent>>({})
@@ -51,7 +53,7 @@ export default function Admin() {
     const { error } = await supabase.from('agenti').insert([{ ...agent, activ: true }])
     if (error) { setMesaj('❌ Eroare: ' + error.message); return }
     setMesaj('✅ Agent adăugat cu succes!')
-    setAgent({ email: '', nume: '', telefon: '', plan: 'Basic', wp_url: '', data_expirare: '' })
+    setAgent({ email: '', nume: '', telefon: '', plan: 'Basic', wp_url: '', data_inceput: '', data_expirare: '', nota_plata: '' })
     setFormNou(false)
     incarcaAgenti()
   }
@@ -69,7 +71,11 @@ export default function Admin() {
 
   const incepeEditare = (a: Agent) => {
     setEditandId(a.id)
-    setEditDate({ email: a.email, nume: a.nume, telefon: a.telefon, plan: a.plan, wp_url: a.wp_url, data_expirare: a.data_expirare || '' })
+    setEditDate({
+      email: a.email, nume: a.nume, telefon: a.telefon, plan: a.plan,
+      wp_url: a.wp_url, data_inceput: a.data_inceput || '',
+      data_expirare: a.data_expirare || '', nota_plata: a.nota_plata || ''
+    })
   }
 
   const salveazaEditare = async (id: number) => {
@@ -79,6 +85,23 @@ export default function Admin() {
     setEditandId(null)
     setEditDate({})
     incarcaAgenti()
+  }
+
+  const getZileRamase = (data_expirare?: string) => {
+    if (!data_expirare) return null
+    const azi = new Date()
+    const expirare = new Date(data_expirare)
+    const zile = Math.ceil((expirare.getTime() - azi.getTime()) / (1000 * 60 * 60 * 24))
+    return zile
+  }
+
+  const getBadgeExpirare = (data_expirare?: string) => {
+    const zile = getZileRamase(data_expirare)
+    if (zile === null) return null
+    if (zile < 0) return { text: 'Expirat', color: '#ef4444', bg: '#fee2e2' }
+    if (zile <= 7) return { text: `⚠️ ${zile} zile`, color: '#ea580c', bg: '#fff7ed' }
+    if (zile <= 30) return { text: `${zile} zile`, color: '#f59e0b', bg: '#fefce8' }
+    return { text: `${zile} zile`, color: '#16a34a', bg: '#dcfce7' }
   }
 
   if (!verificat) return null
@@ -151,6 +174,7 @@ export default function Admin() {
                     { label: 'Nume *', key: 'nume', type: 'text' },
                     { label: 'Telefon', key: 'telefon', type: 'text' },
                     { label: 'URL WordPress', key: 'wp_url', type: 'text' },
+                    { label: 'Data început abonament', key: 'data_inceput', type: 'date' },
                     { label: 'Data expirare abonament', key: 'data_expirare', type: 'date' },
                   ].map(camp => (
                     <div key={camp.key}>
@@ -167,6 +191,11 @@ export default function Admin() {
                       <option>Pro</option>
                       <option>Premium</option>
                     </select>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 600, fontSize: '14px' }}>Notă plată (ex: Monese)</label>
+                    <input type="text" value={agent.nota_plata} onChange={e => setAgent({ ...agent, nota_plata: e.target.value })}
+                      style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' as const }} />
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
@@ -198,6 +227,7 @@ export default function Admin() {
                             { label: 'Nume', key: 'nume', type: 'text' },
                             { label: 'Telefon', key: 'telefon', type: 'text' },
                             { label: 'URL WordPress', key: 'wp_url', type: 'text' },
+                            { label: 'Data început', key: 'data_inceput', type: 'date' },
                             { label: 'Data expirare', key: 'data_expirare', type: 'date' },
                           ].map(camp => (
                             <div key={camp.key}>
@@ -215,6 +245,11 @@ export default function Admin() {
                               <option>Premium</option>
                             </select>
                           </div>
+                          <div>
+                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 600, fontSize: '14px' }}>Notă plată</label>
+                            <input type="text" value={(editDate.nota_plata as string) || ''} onChange={e => setEditDate({ ...editDate, nota_plata: e.target.value })}
+                              style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' as const }} />
+                          </div>
                         </div>
                         <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
                           <button onClick={() => salveazaEditare(a.id)} style={{ background: '#e94560', color: 'white', border: 'none', padding: '12px 25px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
@@ -231,10 +266,18 @@ export default function Admin() {
                           <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '4px' }}>{a.nume}</div>
                           <div style={{ color: '#666', fontSize: '14px' }}>{a.email} • {a.telefon}</div>
                           <div style={{ color: '#888', fontSize: '13px', marginTop: '4px' }}>{a.wp_url}</div>
-                          <div style={{ marginTop: '6px' }}>
+                          {a.nota_plata && (
+                            <div style={{ color: '#6b7280', fontSize: '12px', marginTop: '4px' }}>💳 {a.nota_plata}</div>
+                          )}
+                          <div style={{ marginTop: '6px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                             <span style={{ background: a.activ ? '#dcfce7' : '#fee2e2', color: a.activ ? '#166534' : '#dc2626', padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
                               {a.activ ? '● Activ' : '● Inactiv'}
                             </span>
+                            {getBadgeExpirare(a.data_expirare) && (
+                              <span style={{ background: getBadgeExpirare(a.data_expirare)!.bg, color: getBadgeExpirare(a.data_expirare)!.color, padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
+                                📅 {getBadgeExpirare(a.data_expirare)!.text}
+                              </span>
+                            )}
                           </div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -272,7 +315,7 @@ export default function Admin() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 {agenti.map(a => (
-                  <div key={a.id} style={{ background: 'white', borderRadius: '12px', padding: '20px 25px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)' }}>
+                  <div key={a.id} style={{ background: 'white', borderRadius: '12px', padding: '20px 25px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', borderLeft: `4px solid ${a.activ ? '#22c55e' : '#ef4444'}` }}>
                     {editandId === a.id ? (
                       <div>
                         <h3 style={{ marginTop: 0 }}>✏️ Editează abonament — {a.nume}</h3>
@@ -287,8 +330,18 @@ export default function Admin() {
                             </select>
                           </div>
                           <div>
+                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 600, fontSize: '14px' }}>Data început</label>
+                            <input type="date" value={(editDate.data_inceput as string) || ''} onChange={e => setEditDate({ ...editDate, data_inceput: e.target.value })}
+                              style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' as const }} />
+                          </div>
+                          <div>
                             <label style={{ display: 'block', marginBottom: '5px', fontWeight: 600, fontSize: '14px' }}>Data expirare</label>
                             <input type="date" value={(editDate.data_expirare as string) || ''} onChange={e => setEditDate({ ...editDate, data_expirare: e.target.value })}
+                              style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' as const }} />
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 600, fontSize: '14px' }}>Notă plată</label>
+                            <input type="text" value={(editDate.nota_plata as string) || ''} onChange={e => setEditDate({ ...editDate, nota_plata: e.target.value })}
                               style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' as const }} />
                           </div>
                         </div>
@@ -304,19 +357,30 @@ export default function Admin() {
                     ) : (
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
-                          <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '4px' }}>{a.nume}</div>
-                          <div style={{ color: '#666', fontSize: '14px' }}>{a.email}</div>
+                          <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '6px' }}>{a.nume}</div>
+                          <div style={{ color: '#666', fontSize: '14px', marginBottom: '4px' }}>{a.email}</div>
+                          <div style={{ fontSize: '13px', color: '#888' }}>
+                            📅 Început: {a.data_inceput || 'Nedefinit'} → Expiră: {a.data_expirare || 'Nedefinit'}
+                          </div>
+                          {a.nota_plata && (
+                            <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>💳 {a.nota_plata}</div>
+                          )}
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <span style={{ background: a.plan === 'Premium' ? '#f59e0b' : a.plan === 'Pro' ? '#3b82f6' : '#6b7280', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
                             {a.plan}
                           </span>
-                          <span style={{ color: '#888', fontSize: '13px' }}>
-                            📅 Expiră: {a.data_expirare || 'Nedefinit'}
-                          </span>
+                          {getBadgeExpirare(a.data_expirare) && (
+                            <span style={{ background: getBadgeExpirare(a.data_expirare)!.bg, color: getBadgeExpirare(a.data_expirare)!.color, padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
+                              📅 {getBadgeExpirare(a.data_expirare)!.text}
+                            </span>
+                          )}
                           <span style={{ background: a.activ ? '#dcfce7' : '#fee2e2', color: a.activ ? '#166534' : '#dc2626', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>
                             {a.activ ? 'Activ' : 'Inactiv'}
                           </span>
+                          <button onClick={() => toggleActiv(a.id, a.activ)} style={{ background: a.activ ? '#fff7ed' : '#f0fdf4', color: a.activ ? '#ea580c' : '#16a34a', border: `1px solid ${a.activ ? '#ea580c' : '#16a34a'}`, padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
+                            {a.activ ? '⏸ Dezactivează' : '▶ Activează'}
+                          </button>
                           <button onClick={() => incepeEditare(a)} style={{ background: '#eff6ff', color: '#3b82f6', border: '1px solid #3b82f6', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
                             ✏️ Editează
                           </button>
