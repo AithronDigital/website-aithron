@@ -21,7 +21,8 @@ function numeToSlug(nume: string): string {
 interface Agent {
   nume: string
   telefon: string
-  poza_profil_url?: string
+  agentie: string
+  poza_url?: string
 }
 
 export default function GhidCumparator() {
@@ -39,10 +40,15 @@ export default function GhidCumparator() {
       if (!gasit) { setNegasit(true); setLoading(false); return }
       const { data: setari } = await supabase
         .from('setari_agent')
-        .select('poza_profil_url')
-        .eq('agent_id', gasit.id)
+        .select('poza_url, agentie, telefon')
+        .eq('user_id', gasit.id)
         .single()
-      setAgent({ nume: gasit.nume, telefon: gasit.telefon, poza_profil_url: setari?.poza_profil_url || '' })
+      setAgent({
+        nume: gasit.nume,
+        telefon: setari?.telefon || gasit.telefon,
+        agentie: setari?.agentie || 'Agent imobiliar',
+        poza_url: setari?.poza_url || ''
+      })
       setLoading(false)
     }
     if (slug) cauta()
@@ -60,9 +66,8 @@ export default function GhidCumparator() {
   )
 
   if (negasit) return (
-    <div style={{ minHeight: '100vh', background: '#0f1923', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontFamily: 'Georgia, serif', textAlign: 'center', padding: '20px' }}>
+    <div style={{ minHeight: '100vh', background: '#0f1923', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', textAlign: 'center', padding: '20px' }}>
       <div>
-        <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏠</div>
         <h1 style={{ color: '#c9a84c', marginBottom: '8px' }}>Pagina nu a fost gasita</h1>
         <p style={{ color: '#8899aa' }}>Linkul este incorect sau agentul nu mai este activ.</p>
       </div>
@@ -76,64 +81,72 @@ export default function GhidCumparator() {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #0f1923; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
-        .btn-download { background: linear-gradient(135deg, #c9a84c, #e8c96d, #c9a84c); background-size: 200% auto; color: #0f1923; border: none; padding: 18px 40px; border-radius: 4px; font-family: 'Jost', sans-serif; font-size: 15px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-block; }
-        .btn-download:hover { background-position: right center; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(201,168,76,0.4); }
-        .btn-whatsapp { background: transparent; color: #c9a84c; border: 1px solid #c9a84c; padding: 16px 36px; border-radius: 4px; font-family: 'Jost', sans-serif; font-size: 15px; font-weight: 400; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-block; }
-        .btn-whatsapp:hover { background: rgba(201,168,76,0.1); transform: translateY(-2px); }
+        .btn-gold { background: linear-gradient(135deg, #c9a84c, #e8c96d, #c9a84c); background-size: 200% auto; color: #0f1923; border: none; padding: 18px 40px; border-radius: 4px; font-family: 'Jost', sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-block; width: 100%; text-align: center; }
+        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(201,168,76,0.4); }
+        .btn-wa { background: #1a3a5c; color: #c9a84c; border: 1px solid rgba(201,168,76,0.4); padding: 16px 40px; border-radius: 4px; font-family: 'Jost', sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-block; width: 100%; text-align: center; }
+        .btn-wa:hover { background: #1f4a78; transform: translateY(-2px); }
+        .btn-tel { background: transparent; color: #8899aa; border: 1px solid rgba(255,255,255,0.1); padding: 14px 40px; border-radius: 4px; font-family: 'Jost', sans-serif; font-size: 14px; font-weight: 400; letter-spacing: 1px; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-block; width: 100%; text-align: center; }
+        .btn-tel:hover { border-color: rgba(201,168,76,0.3); color: #c9a84c; }
       `}</style>
 
       <div style={{ minHeight: '100vh', background: '#0f1923', fontFamily: "'Jost', sans-serif" }}>
         <div style={{ height: '3px', background: 'linear-gradient(90deg, transparent, #c9a84c, transparent)' }} />
 
-        <div style={{ maxWidth: '680px', margin: '0 auto', padding: '60px 24px 40px', textAlign: 'center', animation: 'fadeUp 0.7s ease both' }}>
-          <div style={{ display: 'inline-block', border: '1px solid rgba(201,168,76,0.4)', color: '#c9a84c', fontSize: '11px', letterSpacing: '3px', padding: '6px 18px', marginBottom: '50px', textTransform: 'uppercase', fontWeight: 500 }}>
+        <div style={{ maxWidth: '620px', margin: '0 auto', padding: '60px 24px 40px', textAlign: 'center', animation: 'fadeUp 0.7s ease both' }}>
+
+          <div style={{ display: 'inline-block', border: '1px solid rgba(201,168,76,0.3)', color: '#c9a84c', fontSize: '10px', letterSpacing: '3px', padding: '5px 16px', marginBottom: '48px', textTransform: 'uppercase' as const }}>
             GHID COMPLET · CUMPARARE LOCUINTA
           </div>
 
-          {agent?.poza_profil_url ? (
-            <img src={agent.poza_profil_url} alt={agent.nume} style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #c9a84c', display: 'block', margin: '0 auto 20px' }} />
+          {agent?.poza_url ? (
+            <img src={agent.poza_url} alt={agent.nume} style={{ width: '110px', height: '110px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #c9a84c', display: 'block', margin: '0 auto 16px' }} />
           ) : (
-            <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(201,168,76,0.15)', border: '2px solid #c9a84c', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '36px' }}>👤</div>
+            <div style={{ width: '110px', height: '110px', borderRadius: '50%', background: 'rgba(201,168,76,0.1)', border: '2px solid #c9a84c', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="#c9a84c"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+            </div>
           )}
 
-          <p style={{ color: '#8899aa', fontSize: '12px', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '6px' }}>Ghid pregatit de</p>
-          <h2 style={{ color: '#c9a84c', fontFamily: "'Cormorant Garamond', serif", fontSize: '26px', fontWeight: 400, marginBottom: '4px' }}>{agent?.nume}</h2>
-          <p style={{ color: '#6677aa', fontSize: '13px', letterSpacing: '1px', marginBottom: '50px' }}>Agent imobiliar</p>
+          <h2 style={{ color: 'white', fontFamily: "'Cormorant Garamond', serif", fontSize: '28px', fontWeight: 400, marginBottom: '4px' }}>{agent?.nume}</h2>
+          <p style={{ color: '#c9a84c', fontSize: '12px', letterSpacing: '2px', textTransform: 'uppercase' as const, marginBottom: '48px' }}>{agent?.agentie}</p>
 
-          <div style={{ width: '60px', height: '1px', background: 'linear-gradient(90deg, transparent, #c9a84c, transparent)', margin: '0 auto 50px' }} />
+          <div style={{ width: '40px', height: '1px', background: 'linear-gradient(90deg, transparent, #c9a84c, transparent)', margin: '0 auto 48px' }} />
 
-          <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(36px, 6vw, 54px)', fontWeight: 400, color: 'white', lineHeight: 1.2, marginBottom: '16px' }}>
+          <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(34px, 6vw, 52px)', fontWeight: 400, color: 'white', lineHeight: 1.2, marginBottom: '16px' }}>
             Tot ce trebuie sa stii<br />
             <em style={{ color: '#c9a84c' }}>inainte sa cumperi.</em>
           </h1>
 
-          <p style={{ color: '#8899aa', fontSize: '16px', lineHeight: 1.7, marginBottom: '50px', fontWeight: 300 }}>
-            De la primul gand pana la cheile in mana — un ghid complet cu 6 capitole esentiale, scris pentru oameni, nu pentru avocati.
+          <p style={{ color: '#8899aa', fontSize: '15px', lineHeight: 1.8, marginBottom: '40px', fontWeight: 300 }}>
+            De la primul gand pana la cheile in mana — 6 capitole esentiale scrise pentru oameni, nu pentru avocati.
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '50px', textAlign: 'left' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '40px', textAlign: 'left' }}>
             {['Bugetul si prioritatile tale','Ce sa cauti la o proprietate','Procesul pas cu pas','Actele de care ai nevoie','Greselile de evitat','Arta negocierii'].map((cap, i) => (
-              <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(201,168,76,0.15)', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ color: '#c9a84c', fontSize: '11px', fontWeight: 500, minWidth: '22px' }}>0{i + 1}</span>
-                <span style={{ color: '#aabbcc', fontSize: '13px', fontWeight: 300 }}>{cap}</span>
+              <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(201,168,76,0.12)', borderRadius: '4px', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ color: '#c9a84c', fontSize: '11px', fontWeight: 600, minWidth: '20px' }}>0{i + 1}</span>
+                <span style={{ color: '#aabbcc', fontSize: '12px', fontWeight: 300 }}>{cap}</span>
               </div>
             ))}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', alignItems: 'center' }}>
-            <a href="https://vmmkvbmuhyhmeaplwptk.supabase.co/storage/v1/object/public/ghiduri/ghid-cumparator.pdf" target="_blank" rel="noopener noreferrer" className="btn-download">Descarca Ghidul Gratuit</a>
-            <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="btn-whatsapp">Contacteaza-l pe {agent?.nume?.split(' ')[0]}</a>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <a href="https://vmmkvbmuhyhmeaplwptk.supabase.co/storage/v1/object/public/ghiduri/ghid-cumparator.pdf" target="_blank" rel="noopener noreferrer" className="btn-gold">
+              Vezi Ghidul Gratuit
+            </a>
+            <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="btn-wa">
+              Scrie pe WhatsApp agentului tau
+            </a>
+            {agent?.telefon && (
+              <a href={`tel:${telefon}`} className="btn-tel">
+                Suna direct: {agent.telefon}
+              </a>
+            )}
           </div>
 
-          {agent?.telefon && (
-            <p style={{ color: '#6677aa', fontSize: '13px', marginTop: '24px', letterSpacing: '1px' }}>
-              sau suna direct: <a href={`tel:${telefon}`} style={{ color: '#c9a84c', textDecoration: 'none' }}>{agent.telefon}</a>
-            </p>
-          )}
         </div>
 
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginTop: '60px', padding: '24px', textAlign: 'center' }}>
-          <p style={{ color: '#3d4f5e', fontSize: '12px', letterSpacing: '1px' }}>2026 Aithron Digital · Ghid pentru Cumparatori</p>
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: '60px', padding: '24px', textAlign: 'center' }}>
+          <p style={{ color: '#2d3f50', fontSize: '11px', letterSpacing: '1px' }}>2026 Aithron Digital · Ghid pentru Cumparatori</p>
         </div>
       </div>
     </>
