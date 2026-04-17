@@ -50,7 +50,7 @@ export default function GhidCumparator() {
 
   const telefon = agent?.telefon?.replace(/\s/g, '') || ''
   const telefonWA = telefon.startsWith('0') ? '4' + telefon : telefon
-  const whatsappLink = `https://wa.me/${telefonWA}?text=Bună ziua! Am citit Ghidul Cumpărătorului și aș dori să discutăm.`
+  const whatsappLink = `https://wa.me/${telefonWA}?text=Buna ziua! Am citit Ghidul Cumparatorului si as dori sa discutam.`
 
   if (loading) return (
     <div style={{ minHeight: '100vh', background: '#0f1923', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -63,7 +63,7 @@ export default function GhidCumparator() {
     <div style={{ minHeight: '100vh', background: '#0f1923', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontFamily: 'Georgia, serif', textAlign: 'center', padding: '20px' }}>
       <div>
         <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏠</div>
-        <h1 style={{ color: '#c9a84c', marginBottom: '8px' }}>Pagina nu a fost găsită</h1>
+        <h1 style={{ color: '#c9a84c', marginBottom: '8px' }}>Pagina nu a fost gasita</h1>
         <p style={{ color: '#8899aa' }}>Linkul este incorect sau agentul nu mai este activ.</p>
       </div>
     </div>
@@ -87,7 +87,7 @@ export default function GhidCumparator() {
 
         <div style={{ maxWidth: '680px', margin: '0 auto', padding: '60px 24px 40px', textAlign: 'center', animation: 'fadeUp 0.7s ease both' }}>
           <div style={{ display: 'inline-block', border: '1px solid rgba(201,168,76,0.4)', color: '#c9a84c', fontSize: '11px', letterSpacing: '3px', padding: '6px 18px', marginBottom: '50px', textTransform: 'uppercase', fontWeight: 500 }}>
-            GHID COMPLET · CUMPĂRARE LOCUINȚĂ
+            GHID COMPLET · CUMPARARE LOCUINTA
           </div>
 
           {agent?.poza_profil_url ? (
@@ -96,23 +96,23 @@ export default function GhidCumparator() {
             <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(201,168,76,0.15)', border: '2px solid #c9a84c', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '36px' }}>👤</div>
           )}
 
-          <p style={{ color: '#8899aa', fontSize: '12px', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '6px' }}>Ghid pregătit de</p>
+          <p style={{ color: '#8899aa', fontSize: '12px', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '6px' }}>Ghid pregatit de</p>
           <h2 style={{ color: '#c9a84c', fontFamily: "'Cormorant Garamond', serif", fontSize: '26px', fontWeight: 400, marginBottom: '4px' }}>{agent?.nume}</h2>
           <p style={{ color: '#6677aa', fontSize: '13px', letterSpacing: '1px', marginBottom: '50px' }}>Agent imobiliar</p>
 
           <div style={{ width: '60px', height: '1px', background: 'linear-gradient(90deg, transparent, #c9a84c, transparent)', margin: '0 auto 50px' }} />
 
           <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(36px, 6vw, 54px)', fontWeight: 400, color: 'white', lineHeight: 1.2, marginBottom: '16px' }}>
-            Tot ce trebuie să știi<br />
-            <em style={{ color: '#c9a84c' }}>înainte să cumperi.</em>
+            Tot ce trebuie sa stii<br />
+            <em style={{ color: '#c9a84c' }}>inainte sa cumperi.</em>
           </h1>
 
           <p style={{ color: '#8899aa', fontSize: '16px', lineHeight: 1.7, marginBottom: '50px', fontWeight: 300 }}>
-            De la primul gând până la cheile în mână — un ghid complet cu 6 capitole esențiale, scris pentru oameni, nu pentru avocați.
+            De la primul gand pana la cheile in mana — un ghid complet cu 6 capitole esentiale, scris pentru oameni, nu pentru avocati.
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '50px', textAlign: 'left' }}>
-            {['Bugetul și prioritățile tale','Ce să cauți la o proprietate','Procesul pas cu pas','Actele de care ai nevoie','Greșelile de evitat','Arta negocierii'].map((cap, i) => (
+            {['Bugetul si prioritatile tale','Ce sa cauti la o proprietate','Procesul pas cu pas','Actele de care ai nevoie','Greselile de evitat','Arta negocierii'].map((cap, i) => (
               <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(201,168,76,0.15)', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span style={{ color: '#c9a84c', fontSize: '11px', fontWeight: 500, minWidth: '22px' }}>0{i + 1}</span>
                 <span style={{ color: '#aabbcc', fontSize: '13px', fontWeight: 300 }}>{cap}</span>
@@ -121,19 +121,19 @@ export default function GhidCumparator() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', alignItems: 'center' }}>
-            <a href="/ghiduri/ghid-cumparator.pdf" target="_blank" rel="noopener noreferrer" className="btn-download">↓ Descarcă Ghidul Gratuit</a>
-            <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="btn-whatsapp">💬 Contactează-l pe {agent?.nume?.split(' ')[0]}</a>
+            <a href="https://vmmkvbmuhyhmeaplwptk.supabase.co/storage/v1/object/public/ghiduri/ghid-cumparator.pdf" target="_blank" rel="noopener noreferrer" className="btn-download">Descarca Ghidul Gratuit</a>
+            <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="btn-whatsapp">Contacteaza-l pe {agent?.nume?.split(' ')[0]}</a>
           </div>
 
           {agent?.telefon && (
             <p style={{ color: '#6677aa', fontSize: '13px', marginTop: '24px', letterSpacing: '1px' }}>
-              sau sună direct: <a href={`tel:${telefon}`} style={{ color: '#c9a84c', textDecoration: 'none' }}>{agent.telefon}</a>
+              sau suna direct: <a href={`tel:${telefon}`} style={{ color: '#c9a84c', textDecoration: 'none' }}>{agent.telefon}</a>
             </p>
           )}
         </div>
 
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginTop: '60px', padding: '24px', textAlign: 'center' }}>
-          <p style={{ color: '#3d4f5e', fontSize: '12px', letterSpacing: '1px' }}>© 2026 Aithron Digital · Ghid pentru Cumpărători</p>
+          <p style={{ color: '#3d4f5e', fontSize: '12px', letterSpacing: '1px' }}>2026 Aithron Digital · Ghid pentru Cumparatori</p>
         </div>
       </div>
     </>
