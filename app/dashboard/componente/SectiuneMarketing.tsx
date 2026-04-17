@@ -69,7 +69,7 @@ export default function SectiuneMarketing() {
   return (
     <div>
       <h1 style={{ color: 'white', fontSize: '22px', fontWeight: 700, marginBottom: '6px' }}>
-        📣 Materiale Marketing
+        Materiale Marketing
       </h1>
       <p style={{ color: '#8899aa', fontSize: '14px', marginBottom: '32px' }}>
         Ghiduri profesionale pentru clienții tăi — cu numele tău, gata de trimis pe WhatsApp.
@@ -80,27 +80,14 @@ export default function SectiuneMarketing() {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
           {ghiduri.map(ghid => (
-            <div key={ghid.id} style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '14px',
-              padding: '28px',
-            }}>
+            <div key={ghid.id} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '28px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
-                <div style={{
-                  width: '48px', height: '48px', borderRadius: '12px',
-                  background: `${ghid.culoare}22`,
-                  border: `1px solid ${ghid.culoare}44`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '22px', flexShrink: 0
-                }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: `${ghid.culoare}22`, border: `1px solid ${ghid.culoare}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0 }}>
                   {ghid.icon}
                 </div>
                 <div>
                   <h3 style={{ color: 'white', fontSize: '16px', fontWeight: 600, margin: 0 }}>{ghid.titlu}</h3>
-                  <span style={{ color: ghid.culoare, fontSize: '11px', letterSpacing: '1px', textTransform: 'uppercase' as const, fontWeight: 500 }}>
-                    PDF · 11 pagini
-                  </span>
+                  <span style={{ color: ghid.culoare, fontSize: '11px', letterSpacing: '1px', textTransform: 'uppercase' as const, fontWeight: 500 }}>PDF · 11 pagini</span>
                 </div>
               </div>
 
@@ -108,14 +95,7 @@ export default function SectiuneMarketing() {
                 {ghid.descriere}
               </p>
 
-              <div style={{
-                background: 'rgba(0,0,0,0.3)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '8px',
-                padding: '10px 14px',
-                marginBottom: '14px',
-                overflow: 'hidden'
-              }}>
+              <div style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '10px 14px', marginBottom: '14px', overflow: 'hidden' }}>
                 <span style={{ color: '#7788aa', fontSize: '12px', wordBreak: 'break-all' as const }}>
                   {ghid.link}
                 </span>
@@ -124,63 +104,26 @@ export default function SectiuneMarketing() {
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button
                   onClick={() => copiaza(ghid.id, ghid.link)}
-                  style={{
-                    flex: 1,
-                    background: copiat === ghid.id ? '#1a4a2e' : ghid.culoare,
-                    color: copiat === ghid.id ? '#4caf50' : (ghid.id === 'vanzator' ? '#0f1923' : 'white'),
-                    border: 'none',
-                    padding: '12px',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                  }}
+                  style={{ flex: 1, background: copiat === ghid.id ? '#1a4a2e' : ghid.culoare, color: copiat === ghid.id ? '#4caf50' : (ghid.id === 'vanzator' ? '#0f1923' : 'white'), border: 'none', padding: '12px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
                 >
-                  {copiat === ghid.id ? '✓ Link copiat!' : '📋 Copiază link'}
+                  {copiat === ghid.id ? 'Link copiat!' : 'Copiaza link'}
                 </button>
-                
-                  href={ghid.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    background: 'rgba(255,255,255,0.06)',
-                    color: '#aabbcc',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    padding: '12px 14px',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    textDecoration: 'none',
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  👁️
+                <a href={ghid.link} target="_blank" rel="noopener noreferrer" style={{ background: 'rgba(255,255,255,0.06)', color: '#aabbcc', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 14px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer', textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+                  Vezi
                 </a>
               </div>
 
               <p style={{ color: '#445566', fontSize: '11px', marginTop: '12px', textAlign: 'center' as const }}>
-                Copiază linkul și trimite-l pe WhatsApp clienților tăi
+                Copiaza linkul si trimite-l pe WhatsApp clientilor tai
               </p>
             </div>
           ))}
         </div>
       )}
 
-      <div style={{
-        marginTop: '28px',
-        background: 'rgba(201,168,76,0.06)',
-        border: '1px solid rgba(201,168,76,0.2)',
-        borderRadius: '10px',
-        padding: '16px 20px',
-        display: 'flex',
-        gap: '12px',
-        alignItems: 'flex-start'
-      }}>
-        <span style={{ fontSize: '18px', flexShrink: 0 }}>💡</span>
+      <div style={{ marginTop: '28px', background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: '10px', padding: '16px 20px' }}>
         <p style={{ color: '#8899aa', fontSize: '13px', lineHeight: 1.6, margin: 0 }}>
-          Fiecare link este personalizat cu datele tale — clientul vede numele tău, poza ta și un buton de contact direct. Ghidurile sunt gratuite pentru clienții tăi și te poziționează ca un profesionist de încredere.
+          Fiecare link este personalizat cu datele tale. Clientul vede numele tau, poza ta si un buton de contact direct.
         </p>
       </div>
     </div>
