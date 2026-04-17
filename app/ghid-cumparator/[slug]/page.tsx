@@ -34,14 +34,14 @@ export default function GhidCumparator() {
 
   useEffect(() => {
     const cauta = async () => {
-      const { data: agenti } = await supabase.from('agenti').select('id, nume, telefon')
+      const { data: agenti } = await supabase.from('agenti').select('id, nume, telefon, email')
       if (!agenti) { setNegasit(true); setLoading(false); return }
       const gasit = agenti.find(a => numeToSlug(a.nume) === slug)
       if (!gasit) { setNegasit(true); setLoading(false); return }
       const { data: setari } = await supabase
         .from('setari_agent')
         .select('poza_url, agentie, telefon')
-        .eq('user_id', gasit.id)
+        .eq('email', gasit.email)
         .single()
       setAgent({
         nume: gasit.nume,
@@ -81,11 +81,11 @@ export default function GhidCumparator() {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #0f1923; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
-        .btn-gold { background: linear-gradient(135deg, #c9a84c, #e8c96d, #c9a84c); background-size: 200% auto; color: #0f1923; border: none; padding: 18px 40px; border-radius: 4px; font-family: 'Jost', sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-block; width: 100%; text-align: center; }
+        .btn-gold { background: linear-gradient(135deg, #c9a84c, #e8c96d, #c9a84c); background-size: 200% auto; color: #0f1923; border: none; padding: 18px 40px; border-radius: 4px; font-family: 'Jost', sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-block; width: 100%; text-align: center; box-sizing: border-box; }
         .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(201,168,76,0.4); }
-        .btn-wa { background: #1a3a5c; color: #c9a84c; border: 1px solid rgba(201,168,76,0.4); padding: 16px 40px; border-radius: 4px; font-family: 'Jost', sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-block; width: 100%; text-align: center; }
+        .btn-wa { background: #1a3a5c; color: #c9a84c; border: 1px solid rgba(201,168,76,0.4); padding: 16px 40px; border-radius: 4px; font-family: 'Jost', sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-block; width: 100%; text-align: center; box-sizing: border-box; }
         .btn-wa:hover { background: #1f4a78; transform: translateY(-2px); }
-        .btn-tel { background: transparent; color: #8899aa; border: 1px solid rgba(255,255,255,0.1); padding: 14px 40px; border-radius: 4px; font-family: 'Jost', sans-serif; font-size: 14px; font-weight: 400; letter-spacing: 1px; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-block; width: 100%; text-align: center; }
+        .btn-tel { background: transparent; color: #8899aa; border: 1px solid rgba(255,255,255,0.1); padding: 14px 40px; border-radius: 4px; font-family: 'Jost', sans-serif; font-size: 14px; letter-spacing: 1px; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-block; width: 100%; text-align: center; box-sizing: border-box; }
         .btn-tel:hover { border-color: rgba(201,168,76,0.3); color: #c9a84c; }
       `}</style>
 
@@ -142,7 +142,6 @@ export default function GhidCumparator() {
               </a>
             )}
           </div>
-
         </div>
 
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: '60px', padding: '24px', textAlign: 'center' }}>
