@@ -52,15 +52,15 @@ function DashboardContent() {
       padding: '12px 15px', borderRadius: '8px', textDecoration: 'none',
       fontSize: '15px', fontWeight: 600, marginBottom: '8px', textAlign: 'left' as const
     }}>
-      🌐 Vezi site-ul meu
+      Vezi site-ul meu
     </a>
   ) : null
 
   if (esteDesktop) {
     return (
       <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif' }}>
-        <div style={{ width: '230px', background: '#1a1a2e', color: 'white', padding: '30px 20px', display: 'flex', flexDirection: 'column', position: 'sticky' as const, top: 0, height: '100vh' }}>
-          <h2 style={{ color: '#e94560', marginBottom: '40px', fontSize: '20px' }}>🏠 Aithron Digital</h2>
+        <div style={{ width: '230px', background: '#1a1a2e', color: 'white', padding: '30px 20px', display: 'flex', flexDirection: 'column', position: 'sticky' as const, top: 0, height: '100vh', overflowY: 'auto' as const }}>
+          <h2 style={{ color: '#e94560', marginBottom: '40px', fontSize: '20px' }}>Aithron Digital</h2>
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
             {meniu.map(item => (
               <button key={item.id} onClick={() => navigheaza(item.id)} style={{
@@ -75,9 +75,9 @@ function DashboardContent() {
           {butonSite}
           <button
             onClick={async () => { await supabase.auth.signOut(); router.replace('/') }}
-            style={{ background: 'transparent', color: '#e94560', border: 'none', cursor: 'pointer', textAlign: 'left' as const, padding: '12px 15px', fontSize: '15px', width: '100%' }}
+            style={{ background: 'transparent', color: '#e94560', border: 'none', cursor: 'pointer', textAlign: 'left' as const, padding: '12px 15px', fontSize: '15px', width: '100%', marginTop: '8px' }}
           >
-            🚪 Deconectare
+            Deconectare
           </button>
         </div>
         <div style={{ flex: 1, padding: '40px', background: '#f5f5f5', overflowY: 'auto' as const }}>
@@ -101,19 +101,19 @@ function DashboardContent() {
         background: '#1a1a2e', color: 'white', padding: '15px 20px',
         position: 'sticky' as const, top: 0, zIndex: 100
       }}>
-        <h2 style={{ color: '#e94560', margin: 0, fontSize: '18px' }}>🏠 Aithron Digital</h2>
+        <h2 style={{ color: '#e94560', margin: 0, fontSize: '18px' }}>Aithron Digital</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {linkSite && (
             <a href={linkSite} target="_blank" rel="noreferrer" style={{
               background: '#0f3460', color: 'white', padding: '8px 12px',
               borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 600
             }}>
-              🌐 Site
+              Site
             </a>
           )}
           <button onClick={() => setMenuDeschis(!menuDeschis)}
             style={{ background: 'none', border: 'none', color: 'white', fontSize: '26px', cursor: 'pointer', padding: '0 5px' }}>
-            {menuDeschis ? '✕' : '☰'}
+            {menuDeschis ? 'X' : '='}
           </button>
         </div>
       </div>
@@ -122,7 +122,8 @@ function DashboardContent() {
         <div style={{
           position: 'fixed', top: '57px', left: 0, right: 0, bottom: 0,
           background: '#1a1a2e', zIndex: 99, padding: '20px',
-          display: 'flex', flexDirection: 'column', gap: '8px'
+          display: 'flex', flexDirection: 'column', gap: '8px',
+          overflowY: 'auto' as const
         }}>
           {meniu.map(item => (
             <button key={item.id} onClick={() => navigheaza(item.id)} style={{
@@ -139,7 +140,7 @@ function DashboardContent() {
             onClick={async () => { await supabase.auth.signOut(); router.replace('/') }}
             style={{ background: 'transparent', color: '#e94560', border: 'none', cursor: 'pointer', textAlign: 'left', padding: '15px 20px', fontSize: '17px' }}
           >
-            🚪 Deconectare
+            Deconectare
           </button>
         </div>
       )}
