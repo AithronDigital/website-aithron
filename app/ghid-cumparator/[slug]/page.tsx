@@ -40,11 +40,11 @@ export default function GhidCumparator() {
       if (!gasit) { setNegasit(true); setLoading(false); return }
       const { data: setari } = await supabase
         .from('setari_agent')
-        .select('poza_url, agentie, telefon')
+        .select('poza_url, agentie, telefon, nume')
         .eq('email', gasit.email)
         .single()
       setAgent({
-        nume: gasit.nume,
+        nume: setari?.nume || gasit.nume,
         telefon: setari?.telefon || gasit.telefon,
         agentie: setari?.agentie || 'Agent imobiliar',
         poza_url: setari?.poza_url || ''
