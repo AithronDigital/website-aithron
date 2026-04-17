@@ -61,6 +61,7 @@ export const meniu = [
   { id: 'blog', icon: '📝', label: 'Blog' },
   { id: 'site', icon: '🌐', label: 'Editare Site' },
   { id: 'ecard', icon: '👤', label: 'eCard' },
+  { id: 'marketing', icon: '📣', label: 'Materiale Marketing' },
   { id: 'setari', icon: '⚙️', label: 'Setări profil' },
 ]
 

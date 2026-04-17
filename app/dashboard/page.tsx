@@ -10,6 +10,7 @@ import SectiuneSetari from './componente/SectiuneSetari'
 import SectiuneBlog from './componente/SectiuneBlog'
 import SectiuneEditareSite from './componente/SectiuneEditareSite'
 import SectiuneEcard from './componente/SectiuneEcard'
+import SectiuneMarketing from './componente/SectiuneMarketing'
 import { Suspense } from 'react'
 
 function DashboardContent() {
@@ -86,6 +87,7 @@ function DashboardContent() {
           {sectiune === 'blog' && <SectiuneBlog />}
           {sectiune === 'site' && <SectiuneEditareSite />}
           {sectiune === 'ecard' && <SectiuneEcard />}
+          {sectiune === 'marketing' && <SectiuneMarketing />}
           {sectiune === 'setari' && <SectiuneSetari />}
         </div>
       </div>
@@ -149,6 +151,7 @@ function DashboardContent() {
         {sectiune === 'blog' && <SectiuneBlog />}
         {sectiune === 'site' && <SectiuneEditareSite />}
         {sectiune === 'ecard' && <SectiuneEcard />}
+        {sectiune === 'marketing' && <SectiuneMarketing />}
         {sectiune === 'setari' && <SectiuneSetari />}
       </div>
     </div>
