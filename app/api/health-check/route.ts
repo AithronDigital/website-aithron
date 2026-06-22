@@ -10,7 +10,12 @@ export async function GET() {
   try {
     const { error } = await supabase.from('health_ping').select('id').limit(1);
 
-    if (error) throw error;
+    if (error) {
+      return NextResponse.json(
+        { status: 'error', code: error.code, message: error.message },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ status: 'ok', supabase: 'connected' });
   } catch (error) {
