@@ -8,7 +8,7 @@ const supabase = createClient(
 
 export async function GET() {
   try {
-    const { error } = await supabase.from('agenti').select('id').limit(1);
+    const { error } = await supabase.from('health_ping').select('id').limit(1);
 
     if (error) throw error;
 
