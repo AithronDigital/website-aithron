@@ -19,16 +19,29 @@ type Agent = {
   nota_plata?: string
 }
 
+type BetaAplicant = {
+  id: string
+  nume: string
+  email: string
+  telefon: string
+  judet: string
+  mesaj: string
+  status: string
+  created_at: string
+}
+
 export default function Admin() {
   const router = useRouter()
   const [verificat, setVerificat] = useState(false)
   const [agenti, setAgenti] = useState<Agent[]>([])
+  const [betaAplicanti, setBetaAplicanti] = useState<BetaAplicant[]>([])
   const [sectiune, setSectiune] = useState('agenti')
   const [formNou, setFormNou] = useState(false)
   const [agent, setAgent] = useState({ email: '', nume: '', telefon: '', plan: 'Basic', wp_url: '', data_inceput: '', data_expirare: '', nota_plata: '' })
   const [mesaj, setMesaj] = useState('')
   const [editandId, setEditandId] = useState<number | null>(null)
   const [editDate, setEditDate] = useState<Partial<Agent>>({})
+  const [mesajBeta, setMesajBeta] = useState('')
 
   useEffect(() => {
     const verificaSesiunea = async () => {
@@ -38,6 +51,7 @@ export default function Admin() {
       } else {
         setVerificat(true)
         incarcaAgenti()
+        incarcaBetaAplicanti()
       }
     }
     verificaSesiunea()
@@ -46,6 +60,25 @@ export default function Admin() {
   const incarcaAgenti = async () => {
     const { data } = await supabase.from('agenti').select('*').order('created_at', { ascending: false })
     if (data) setAgenti(data)
+  }
+
+  const incarcaBetaAplicanti = async () => {
+    const { data } = await supabase.from('beta_aplicanti').select('*').order('created_at', { ascending: false })
+    if (data) setBetaAplicanti(data)
+  }
+
+  const schimbaStatusBeta = async (id: string, status: string) => {
+    const { error } = await supabase.from('beta_aplicanti').update({ status }).eq('id', id)
+    if (error) { setMesajBeta('❌ Eroare: ' + error.message); return }
+    setMesajBeta(status === 'aprobat' ? '✅ Aplicant aprobat!' : '✅ Status actualizat!')
+    incarcaBetaAplicanti()
+    setTimeout(() => setMesajBeta(''), 3000)
+  }
+
+  const stergeBetaAplicant = async (id: string) => {
+    if (!confirm('Ștergi acest aplicant definitiv?')) return
+    await supabase.from('beta_aplicanti').delete().eq('id', id)
+    incarcaBetaAplicanti()
   }
 
   const adaugaAgent = async () => {
@@ -104,10 +137,17 @@ export default function Admin() {
     return { text: `${zile} zile`, color: '#16a34a', bg: '#dcfce7' }
   }
 
+  const getBadgeStatus = (status: string) => {
+    if (status === 'aprobat') return { bg: '#dcfce7', color: '#166534', text: '✅ Aprobat' }
+    if (status === 'respins') return { bg: '#fee2e2', color: '#dc2626', text: '❌ Respins' }
+    return { bg: '#fef9c3', color: '#854d0e', text: '⏳ În așteptare' }
+  }
+
   if (!verificat) return null
 
   const agentiActivi = agenti.filter(a => a.activ).length
   const agentiInactivi = agenti.filter(a => !a.activ).length
+  const betaInAsteptare = betaAplicanti.filter(b => b.status === 'in_asteptare').length
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif' }}>
@@ -120,6 +160,7 @@ export default function Admin() {
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
           {[
             { id: 'agenti', icon: '👥', label: 'Agenți' },
+            { id: 'beta', icon: '🧪', label: `Beta${betaInAsteptare > 0 ? ` (${betaInAsteptare})` : ''}` },
             { id: 'monitoring', icon: '📡', label: 'Monitorizare' },
             { id: 'abonamente', icon: '💰', label: 'Abonamente' },
             { id: 'statistici', icon: '📊', label: 'Statistici' },
@@ -298,6 +339,80 @@ export default function Admin() {
                     )}
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* SECȚIUNEA BETA */}
+        {sectiune === 'beta' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+              <h1 style={{ margin: 0, fontSize: '28px', color: '#1a1a2e' }}>🧪 Aplicanți Beta ({betaAplicanti.length})</h1>
+              {betaInAsteptare > 0 && (
+                <span style={{ background: '#fef9c3', color: '#854d0e', padding: '8px 18px', borderRadius: '20px', fontWeight: 700, fontSize: '14px' }}>
+                  ⏳ {betaInAsteptare} în așteptare
+                </span>
+              )}
+            </div>
+
+            {mesajBeta && (
+              <div style={{ background: mesajBeta.includes('✅') ? '#dcfce7' : '#fee2e2', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontWeight: 600 }}>
+                {mesajBeta}
+              </div>
+            )}
+
+            {betaAplicanti.length === 0 ? (
+              <div style={{ background: 'white', borderRadius: '12px', padding: '60px', textAlign: 'center', color: '#888' }}>
+                <div style={{ fontSize: '48px', marginBottom: '15px' }}>🧪</div>
+                <p style={{ fontSize: '16px' }}>Nu ai aplicanți beta încă.</p>
+                <p style={{ fontSize: '14px', color: '#aaa' }}>Când agenții completează formularul de pe landing page, apar aici.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                {betaAplicanti.map(b => {
+                  const badge = getBadgeStatus(b.status)
+                  return (
+                    <div key={b.id} style={{ background: 'white', borderRadius: '12px', padding: '20px 25px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', borderLeft: `4px solid ${b.status === 'aprobat' ? '#22c55e' : b.status === 'respins' ? '#ef4444' : '#f59e0b'}` }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '4px' }}>{b.nume}</div>
+                          <div style={{ color: '#666', fontSize: '14px', marginBottom: '2px' }}>📧 {b.email}</div>
+                          <div style={{ color: '#666', fontSize: '14px', marginBottom: '2px' }}>📞 {b.telefon}</div>
+                          {b.judet && <div style={{ color: '#888', fontSize: '13px', marginBottom: '2px' }}>📍 {b.judet}</div>}
+                          {b.mesaj && (
+                            <div style={{ marginTop: '10px', background: '#f9fafb', borderRadius: '8px', padding: '10px 14px', fontSize: '13px', color: '#555', maxWidth: '500px' }}>
+                              💬 {b.mesaj}
+                            </div>
+                          )}
+                          <div style={{ marginTop: '8px', fontSize: '12px', color: '#aaa' }}>
+                            Aplicat: {new Date(b.created_at).toLocaleDateString('ro-RO', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
+                          <span style={{ background: badge.bg, color: badge.color, padding: '5px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: 700 }}>
+                            {badge.text}
+                          </span>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            {b.status !== 'aprobat' && (
+                              <button onClick={() => schimbaStatusBeta(b.id, 'aprobat')} style={{ background: '#f0fdf4', color: '#16a34a', border: '1px solid #16a34a', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
+                                ✅ Aprobă
+                              </button>
+                            )}
+                            {b.status !== 'respins' && (
+                              <button onClick={() => schimbaStatusBeta(b.id, 'respins')} style={{ background: '#fff7ed', color: '#ea580c', border: '1px solid #ea580c', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
+                                ❌ Respinge
+                              </button>
+                            )}
+                            <button onClick={() => stergeBetaAplicant(b.id)} style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                              🗑️
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>
