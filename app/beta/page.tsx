@@ -75,7 +75,7 @@ export default function BetaPage() {
           <h1 style={{ fontSize: 'clamp(32px, 6vw, 54px)', fontWeight: 900, lineHeight: 1.15, margin: '0 0 24px', textAlign: 'center', letterSpacing: '-1px' }}>
             Sistemul digital complet<br />
             <span style={{ background: 'linear-gradient(135deg, #e94560, #ff6b8a, #e94560)', backgroundSize: '200% auto', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', animation: 'shimmer 3s linear infinite' }}>
-              pentru agentul tău imobiliar
+              pentru tine, agent imobiliar
             </span>
           </h1>
 
@@ -174,7 +174,7 @@ export default function BetaPage() {
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
             {[
-              { icon: '👩‍💼', titlu: 'Am fost agent 6 ani', text: 'Știu exact cu ce te confrunți zilnic. Am construit asta pentru că eu însămi am simțit nevoia.' },
+              { icon: '👩‍💼', titlu: 'Sunt agent imobiliar activ', text: 'Lucrez ca buyers agent prin NorvenBuyers.com. Știu exact cu ce te confrunți zilnic — am construit asta din interior, nu din teorie.' },
               { icon: '🤝', titlu: 'Am nevoie de tine', text: 'Nu de un utilizator pasiv — ci de cineva care folosește platforma și îmi spune sincer ce lipsește.' },
               { icon: '💎', titlu: 'Recompensa ta', text: 'Dacă îți place și rămâi, primești un preț special de fondator, rezervat celor 20 de pionieri.' },
             ].map((item, i) => (
