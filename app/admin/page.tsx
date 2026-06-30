@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabaseAdmin as supabase } from '../../lib/supabase-admin'
+import { supabase } from '../../lib/supabase'
 
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'mirela25lili@gmail.com'
 
@@ -63,13 +63,18 @@ export default function Admin() {
   }
 
   const incarcaBetaAplicanti = async () => {
-    const { data } = await supabase.from('beta_aplicanti').select('*').order('created_at', { ascending: false })
-    if (data) setBetaAplicanti(data)
+    const res = await fetch('/api/admin/beta-aplicanti')
+    const json = await res.json()
+    if (json.data) setBetaAplicanti(json.data)
   }
 
   const schimbaStatusBeta = async (id: string, status: string) => {
-    const { error } = await supabase.from('beta_aplicanti').update({ status }).eq('id', id)
-    if (error) { setMesajBeta('❌ Eroare: ' + error.message); return }
+    const res = await fetch('/api/admin/beta-aplicanti', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status })
+    })
+    if (!res.ok) { setMesajBeta('❌ Eroare la actualizare'); return }
     setMesajBeta(status === 'aprobat' ? '✅ Aplicant aprobat!' : '✅ Status actualizat!')
     incarcaBetaAplicanti()
     setTimeout(() => setMesajBeta(''), 3000)
@@ -77,7 +82,7 @@ export default function Admin() {
 
   const stergeBetaAplicant = async (id: string) => {
     if (!confirm('Ștergi acest aplicant definitiv?')) return
-    await supabase.from('beta_aplicanti').delete().eq('id', id)
+    await fetch(`/api/admin/beta-aplicanti?id=${id}`, { method: 'DELETE' })
     incarcaBetaAplicanti()
   }
 
